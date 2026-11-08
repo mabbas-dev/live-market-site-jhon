@@ -2,7 +2,7 @@
   <footer class="bg-slate-50 border-t border-slate-200/80 pt-16 pb-12 text-xs text-slate-500">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-200" data-aos="fade-up" data-aos-duration="700">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 pb-12 border-b border-slate-200" data-aos="fade-up" data-aos-duration="700">
         
         <!-- Brand Column -->
         <div class="lg:col-span-2">
@@ -50,9 +50,21 @@
           </ul>
         </div>
 
-        <!-- Links Column 3: Trust & Security -->
+        <!-- Links Column 3: Legal & Policies -->
         <div>
-          <h4 class="font-heading font-bold text-slate-900 text-sm mb-4">Security & Guarantees</h4>
+          <h4 class="font-heading font-bold text-slate-900 text-sm mb-4">Legal & Policies</h4>
+          <ul class="space-y-2.5">
+            <li><a href="/terms" class="hover:text-cyan-600 transition-colors">Terms of Service</a></li>
+            <li><a href="/privacy" class="hover:text-cyan-600 transition-colors">Privacy Policy</a></li>
+            <li><a href="/refund-policy" class="hover:text-cyan-600 transition-colors">Refund Policy</a></li>
+            <li><a href="/dmca" class="hover:text-cyan-600 transition-colors">DMCA Compliance</a></li>
+            <li><a href="/copyright" class="hover:text-cyan-600 transition-colors">Copyright Notice</a></li>
+          </ul>
+        </div>
+
+        <!-- Links Column 4: Trust & Security -->
+        <div>
+          <h4 class="font-heading font-bold text-slate-900 text-sm mb-4">Security & Trust</h4>
           <ul class="space-y-2.5">
             <li class="flex items-center gap-2"><i data-lucide="shield" class="w-3.5 h-3.5 text-cyan-600"></i> 256-Bit SSL Encryption</li>
             <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-cyan-600"></i> 7-Day Money Back SLA</li>
@@ -65,14 +77,27 @@
 
       <!-- Legal disclaimer & Copyright -->
       <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-        <p class="flex items-center gap-2">
-          <span>&copy; <?= date('Y') ?> <?= htmlspecialchars(SITE_NAME) ?>. All rights reserved. Domain: <?= htmlspecialchars(SITE_DOMAIN) ?></span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span>&copy; <?= date('Y') ?> <?= htmlspecialchars(SITE_NAME) ?>. All rights reserved.</span>
+          <span>•</span>
+          <a href="/terms" class="hover:text-cyan-600 transition-colors">Terms</a>
+          <span>•</span>
+          <a href="/privacy" class="hover:text-cyan-600 transition-colors">Privacy</a>
+          <span>•</span>
+          <a href="/refund-policy" class="hover:text-cyan-600 transition-colors">Refunds</a>
+          <span>•</span>
+          <a href="/dmca" class="hover:text-cyan-600 transition-colors">DMCA</a>
+          <span>•</span>
+          <a href="/copyright" class="hover:text-cyan-600 transition-colors">Copyright</a>
           <span>•</span>
           <a href="admin/login.php" class="text-slate-600 hover:text-cyan-600 transition-colors flex items-center gap-1 font-mono">
             <i data-lucide="lock" class="w-3 h-3"></i> Admin Portal
           </a>
-        </p>
+        </div>
         <p class="max-w-xl text-center md:text-right">
+          Disclaimer: All trademarks, logos, and brand names are property of their respective owners. <?= htmlspecialchars(SITE_NAME) ?> operates as an authenticated streaming subscription gateway.
+        </p>
+      </div>
           Disclaimer: All trademarks, logos, and brand names are property of their respective owners. <?= htmlspecialchars(SITE_NAME) ?> operates as an authenticated streaming subscription gateway.
         </p>
       </div>

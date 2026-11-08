@@ -20,7 +20,13 @@ ErrorDocument 404 /404.php
     RewriteRule ^blog/?$ blog.php [NC,L]
 
     # Specific clean route for blog articles: /blog/<slug> -> blog-details.php?slug=<slug>
+
+    # Specific alias for refund policy
+    RewriteRule ^refund/?$ refund-policy.php [NC,L]
     RewriteRule ^blog/([^/]+)/?$ blog-details.php?slug=$1 [QSA,NC,L]
+
+    # Specific alias for refund policy
+    RewriteRule ^refund/?$ refund-policy.php [NC,L]
 
     # Clean URLs: allow /channels to serve channels.php, /contact to serve contact.php, etc.
     RewriteCond %{REQUEST_FILENAME} !-d

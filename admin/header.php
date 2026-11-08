@@ -131,6 +131,11 @@ try {
         <span>Live Sales Popups</span>
       </a>
 
+      <a href="legal.php" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all <?= ($curAdminPage === 'legal') ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
+        <i data-lucide="scale" class="w-4 h-4 text-amber-400"></i>
+        <span>Legal & Policy Pages</span>
+      </a>
+
       <div class="px-3 pt-4 pb-1 text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">Leads & Sales</div>
 
       <a href="trials.php" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all <?= ($curAdminPage === 'trials') ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
