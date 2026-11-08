@@ -438,6 +438,180 @@ HTML;
 }
 
 /**
+ * Generate high-tech, responsive HTML email for customer free trial confirmation.
+ */
+function buildCustomerTrialEmail(array $lead): string {
+    $siteName     = getSetting('site_name', 'LIVETVMARKET');
+    $siteUrl      = getSetting('site_url', 'https://livetvmarket.com');
+    $leadId       = $lead['id'] ?? '1';
+    $customerName = htmlspecialchars($lead['full_name'] ?? 'Customer');
+    $email        = htmlspecialchars($lead['email'] ?? '');
+    $whatsapp     = htmlspecialchars($lead['whatsapp'] ?? '');
+    $device       = htmlspecialchars($lead['device'] ?? 'Smart TV / Firestick');
+    $app          = htmlspecialchars($lead['app'] ?? 'IPTV Smarters Pro');
+    $cleanWa      = preg_replace('/[^0-9]/', '', getSetting('contact_whatsapp', '+1 555 019 2831'));
+
+    $setupUrl = rtrim($siteUrl, '/') . '/setup';
+    $waText   = urlencode("Hello LIVETVMARKET Support, I requested a 24-Hour Free Trial (#TR-{$leadId}) for my {$device}. Can you assist with setup?");
+    $waUrl    = "https://wa.me/{$cleanWa}?text={$waText}";
+
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>24-Hour Free Trial Request Received</title>
+</head>
+<body style="margin:0; padding:0; background-color:#070913; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#070913; padding: 40px 15px;">
+    <tr>
+      <td align="center">
+        <!-- Main Container -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; background-color:#0D1126; border:1px solid rgba(0, 210, 255, 0.25); border-radius:24px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 30px; background: linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(59, 130, 246, 0.05)); border-bottom: 1px solid rgba(255, 255, 255, 0.08); text-align: center;">
+              <div style="font-size: 20px; font-weight: 900; letter-spacing: 1px; color:#ffffff; text-transform: uppercase;">
+                {$siteName} <span style="color:#00d2ff;">VIP STREAMING</span>
+              </div>
+              <div style="margin-top: 8px; display: inline-block; padding: 4px 12px; background: rgba(0, 210, 255, 0.15); border: 1px solid rgba(0, 210, 255, 0.4); border-radius: 9999px; font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em;">
+                🎁 24-Hour Free Trial Request Received
+              </div>
+            </td>
+          </tr>
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding: 32px 30px;">
+              <h1 style="margin: 0 0 12px; font-size: 22px; font-weight: 800; color: #ffffff;">
+                Hello, {$customerName}!
+              </h1>
+              <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #94a3b8;">
+                We have received your 24-Hour Free Trial request. Our automated provisioning system is preparing your Anti-Freeze™ 9.9 high-speed streaming test line.
+              </p>
+
+              <!-- Trial Request Details Card -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Request Reference:</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 700; color: #00d2ff; text-align: right; font-family: monospace;">#TR-{$leadId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Service:</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">24-Hour Free Test Line (100% Free)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Target Device:</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$device}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Preferred App:</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$app}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 14px 18px; font-size: 13px; color: #94a3b8;">Status:</td>
+                  <td style="padding: 14px 18px; font-size: 13px; font-weight: 700; color: #38bdf8; text-align: right;">● Line Being Prepared</td>
+                </tr>
+              </table>
+
+              <!-- Next Steps Info Box -->
+              <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+                <div style="font-size: 14px; font-weight: 700; color: #00d2ff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">
+                  ⚡ What Happens Next?
+                </div>
+                <p style="margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+                  Your free 24-hour playlist (M3U &amp; Xtream Codes login) is being generated for <strong>{$device}</strong>. We will send the full credentials directly to this email (<span style="color:#38bdf8;">{$email}</span>) and to your WhatsApp (<span style="color:#34d399;">{$whatsapp}</span>).
+                </p>
+                <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #94a3b8;">
+                  Want your trial activated right now? Click the WhatsApp Fast-Track button below to chat directly with our technical support engineers.
+                </p>
+              </div>
+
+              <!-- Action Buttons -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    <a href="{$waUrl}" target="_blank" style="display: block; width: 88%; padding: 14px 20px; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);">
+                      💬 Fast-Track Trial on WhatsApp &rarr;
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 10px;">
+                    <a href="{$setupUrl}" target="_blank" style="display: block; width: 88%; padding: 12px 20px; background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.3); color: #00d2ff; font-weight: 700; font-size: 13px; text-decoration: none; border-radius: 12px; text-align: center;">
+                      📖 View App Setup Guides ({$app})
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #64748b; text-align: center;">
+                Need help installing on Firestick, IPTV Smarters, TiviMate, or Apple TV? Our 24/7 technical team is standing by.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 30px; background-color: #070913; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center; font-size: 11px; color: #475569;">
+              © {$siteName}. All broadcasts syndicated via certified partner CDN clusters.<br>
+              Trial Request #TR-{$leadId} • Automated System Dispatch
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+HTML;
+}
+
+/**
+ * Generate Admin notification email when a free trial lead is registered.
+ */
+function buildAdminTrialAlertEmail(array $lead): string {
+    $siteName     = getSetting('site_name', 'LIVETVMARKET');
+    $siteUrl      = getSetting('site_url', 'https://livetvmarket.com');
+    $leadId       = $lead['id'] ?? '1';
+    $customerName = htmlspecialchars($lead['full_name'] ?? 'Customer');
+    $email        = htmlspecialchars($lead['email'] ?? 'customer@example.com');
+    $whatsapp     = htmlspecialchars($lead['whatsapp'] ?? 'N/A');
+    $device       = htmlspecialchars($lead['device'] ?? 'Unknown');
+    $app          = htmlspecialchars($lead['app'] ?? 'Unknown');
+    $createdAt    = htmlspecialchars($lead['created_at'] ?? date('Y-m-d H:i:s'));
+    $adminUrl     = rtrim($siteUrl, '/') . '/admin/trials.php';
+
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<body style="margin:0; padding:20px; background:#070913; font-family:sans-serif; color:#ffffff;">
+  <div style="max-width:550px; margin:0 auto; background:#0D1126; border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:24px;">
+    <div style="font-size:12px; font-weight:700; color:#38bdf8; text-transform:uppercase; margin-bottom:8px;">● NEW FREE TRIAL LEAD</div>
+    <h2 style="margin:0 0 16px; font-size:20px; color:#fff;">Trial Request #TR-{$leadId} — {$customerName}</h2>
+    
+    <table width="100%" style="font-size:13px; line-height:2; border-collapse:collapse; color:#cbd5e1;">
+      <tr><td><strong>Lead Name:</strong></td><td align="right">{$customerName}</td></tr>
+      <tr><td><strong>Email:</strong></td><td align="right">{$email}</td></tr>
+      <tr><td><strong>WhatsApp:</strong></td><td align="right">{$whatsapp}</td></tr>
+      <tr><td><strong>Device:</strong></td><td align="right">{$device}</td></tr>
+      <tr><td><strong>App:</strong></td><td align="right">{$app}</td></tr>
+      <tr><td><strong>Submitted:</strong></td><td align="right">{$createdAt}</td></tr>
+    </table>
+
+    <div style="margin-top:20px; text-align:center;">
+      <a href="{$adminUrl}" style="display:inline-block; padding:10px 20px; background:#00d2ff; color:#000; font-weight:700; border-radius:8px; text-decoration:none; font-size:13px;">Open Free Trial Leads in Admin &rarr;</a>
+    </div>
+  </div>
+</body>
+</html>
+HTML;
+}
+
+/**
  * Generate Admin notification email when order is created or paid.
  */
 function buildAdminOrderAlertEmail(array $order, bool $isPaid = false): string {
@@ -561,4 +735,47 @@ function notifyOrderPaid(int $orderId, string $txid = ''): void {
         error_log("[NOTIFY ORDER PAID ERROR] " . $e->getMessage());
     }
 }
+
+/**
+ * Triggered when a visitor submits a free trial request.
+ * Delivers customer confirmation email, admin notification email, and Pushover push alert.
+ */
+function notifyTrialLead(int $leadId): void {
+    global $pdo;
+    if (!$pdo || $leadId <= 0) return;
+
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM `trial_leads` WHERE `id` = ? LIMIT 1");
+        $stmt->execute([$leadId]);
+        $lead = $stmt->fetch();
+        if (!$lead) return;
+
+        $siteUrl = getSetting('site_url', 'https://livetvmarket.com');
+        $adminTrialsUrl = rtrim($siteUrl, '/') . '/admin/trials.php';
+
+        // 1. Send Pushover Push Notification to Admin devices (e.g. pixel8)
+        $title = "🎁 Free Trial: {$lead['full_name']}";
+        $msg = "Customer: {$lead['full_name']}\nDevice: {$lead['device']}\nApp: {$lead['app']}\nEmail: {$lead['email']}\nWhatsApp: {$lead['whatsapp']}";
+        sendPushoverNotification($title, $msg, $adminTrialsUrl, 0, 'pushover');
+
+        // 2. Deliver Confirmation Email to Customer via SMTP
+        if (!empty($lead['email'])) {
+            $custSubject = "Your Free 24h Trial Request Has Been Received — LIVETVMARKET";
+            $custHtml = buildCustomerTrialEmail($lead);
+            $sendRes = sendSMTPEmail($lead['email'], $lead['full_name'] ?: 'Customer', $custSubject, $custHtml);
+            error_log("[CUSTOMER TRIAL EMAIL] Lead #{$leadId}: " . ($sendRes['success'] ? 'SUCCESS' : ('FAILED - ' . ($sendRes['error'] ?? ''))));
+        }
+
+        // 3. Send Admin Notification Email via SMTP
+        $adminEmail = getSetting('smtp_admin_email', getSetting('contact_email', 'admin@livetvmarket.com'));
+        if (!empty($adminEmail)) {
+            $adminSubject = "🎁 [NEW TRIAL REQUEST] #TR-{$lead['id']} - {$lead['full_name']} ({$lead['device']})";
+            $adminHtml = buildAdminTrialAlertEmail($lead);
+            sendSMTPEmail($adminEmail, 'Administrator', $adminSubject, $adminHtml);
+        }
+    } catch (Exception $e) {
+        error_log("[NOTIFY TRIAL LEAD ERROR] " . $e->getMessage());
+    }
+}
+
 

@@ -76,6 +76,11 @@ try {
     // Trigger paid order notifications (Pushover alert with cashregister sound + SMTP emails)
     if ($dbStatus === 'Paid') {
         notifyOrderPaid($orderId, $refId);
+        // Sync matching trial lead if this was a paid test line
+        try {
+            $leadStmt = $pdo->prepare("UPDATE `trial_leads` SET `status` = 'Sent' WHERE `status` LIKE ?");
+            $leadStmt->execute(['%' . $orderId . '%']);
+        } catch (Exception $leadEx) {}
     }
 
     http_response_code(200);

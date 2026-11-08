@@ -865,7 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Free Trial Form submission (Connected to MySQL DB 'iptv-website')
+  // Free / Paid Trial Form submission
   const trialForm = document.getElementById('trial-form');
   const trialSuccess = document.getElementById('trial-success-box');
 
@@ -873,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
     trialForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = trialForm.querySelector('button[type="submit"]');
-      const originalText = submitBtn ? submitBtn.innerHTML : 'Generate Test Line Now';
+      const originalText = submitBtn ? submitBtn.innerHTML : 'Proceed';
 
       const fullName = (trialForm.querySelector('input[name="full_name"]')?.value || '').trim();
       const email = (trialForm.querySelector('input[name="email"]')?.value || '').trim();
@@ -886,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Generating Free Test Line...';
+        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Processing Test Line...';
       }
 
       const formData = new FormData(trialForm);
@@ -902,6 +902,15 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
           }
+          return;
+        }
+
+        // If Paid Trial with Gateway Redirect:
+        if (result.redirect_url) {
+          if (submitBtn) {
+            submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Redirecting to Secure Gateway...';
+          }
+          window.location.href = result.redirect_url;
           return;
         }
       } catch (err) {

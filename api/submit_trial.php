@@ -1,11 +1,13 @@
 <?php
 /**
- * LIVETVMARKET - API: Submit Free 24h Trial Lead
- * Inserts visitor trial request directly into MySQL database 'iptv-website'.
+ * LIVETVMARKET - API: Submit 24h Trial Request
+ * Handles both Free Trial leads (SMTP + Pushover) and Paid Test Line orders (Payment Gateway Bridge).
  */
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/payment_bridge.php';
+require_once __DIR__ . '/../config/notifications.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
@@ -19,27 +21,99 @@ if (!$input) {
 }
 
 $fullName = trim($input['full_name'] ?? $input['name'] ?? '');
-$email = trim($input['email'] ?? '');
+$email    = trim($input['email'] ?? '');
 $whatsapp = trim($input['whatsapp'] ?? '');
-$device = trim($input['device'] ?? 'Firestick');
-$app = trim($input['app'] ?? 'IPTV Smarters Pro');
+$device   = trim($input['device'] ?? 'Amazon Firestick 4K');
+$app      = trim($input['app'] ?? 'IPTV Smarters Pro');
 
 if (empty($fullName) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL) || empty($whatsapp)) {
     echo json_encode(['success' => false, 'message' => 'Full Name, a valid Email address, and WhatsApp Number are all required.']);
     exit;
 }
 
-try {
-    $stmt = $pdo->prepare("INSERT INTO `trial_leads` (`full_name`, `email`, `whatsapp`, `device`, `app`, `status`) VALUES (?, ?, ?, ?, ?, 'Pending')");
-    $stmt->execute([$fullName, $email, $whatsapp, $device, $app]);
-    $leadId = $pdo->lastInsertId();
+// Map short device / app slugs to readable names if needed
+$deviceNames = [
+    'firestick' => 'Amazon Firestick 4K',
+    'androidtv' => 'Android TV / Box',
+    'smarttv'   => 'Samsung / LG Smart TV',
+    'apple'     => 'Apple TV / iOS',
+    'pc'        => 'Windows / Mac PC',
+    'mag'       => 'MAG / Formuler Box'
+];
+if (isset($deviceNames[strtolower($device)])) {
+    $device = $deviceNames[strtolower($device)];
+}
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'Your 24h free trial request has been registered successfully!',
-        'lead_id' => $leadId
-    ]);
+$appNames = [
+    'smarters'  => 'IPTV Smarters Pro',
+    'tivimate'  => 'TiviMate',
+    'iboplayer' => 'IBO Player',
+    'xciptv'    => 'XCIPTV',
+    'vlc'       => 'VLC Player',
+    'm3u'       => 'Direct M3U URL'
+];
+if (isset($appNames[strtolower($app)])) {
+    $app = $appNames[strtolower($app)];
+}
+
+$trialMode     = strtolower(getSetting('trial_mode', 'free'));
+$trialPrice    = floatval(getSetting('trial_price', '1.99'));
+$trialDuration = getSetting('trial_duration_hours', '24');
+
+try {
+    if ($trialMode === 'paid') {
+        // ─── PAID TEST LINE MODE: Create Order and Redirect to Gateway ────────
+        $planName  = "Paid {$trialDuration}h Test Line";
+        $currency  = 'USD';
+        $country   = 'US';
+        $deviceStr = "{$device} ({$app})";
+
+        // Insert into orders table
+        $stmt = $pdo->prepare("INSERT INTO `orders` (`customer_name`, `email`, `whatsapp`, `plan_name`, `connections`, `amount`, `currency`, `country`, `device`, `payment_channel`, `status`) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, 'Credit Card', 'New')");
+        $stmt->execute([$fullName, $email, $whatsapp, $planName, $trialPrice, $currency, $country, $deviceStr]);
+        $orderId = (int)$pdo->lastInsertId();
+
+        // Also record in trial_leads for admin reference
+        $leadStmt = $pdo->prepare("INSERT INTO `trial_leads` (`full_name`, `email`, `whatsapp`, `device`, `app`, `status`) VALUES (?, ?, ?, ?, ?, ?)");
+        $leadStmt->execute([$fullName, $email, $whatsapp, $device, $app, "Paid Order #LTV-{$orderId}"]);
+
+        // Send instant Pushover push to admin (pixel8) for new order
+        notifyNewOrder($orderId);
+
+        // Generate signed payment bridge URL
+        $redirectUrl = createBridgeCheckoutUrl([
+            'id'            => $orderId,
+            'amount'        => $trialPrice,
+            'currency'      => $currency,
+            'customer_name' => $fullName,
+            'email'         => $email,
+            'whatsapp'      => $whatsapp
+        ]);
+
+        echo json_encode([
+            'success'      => true,
+            'is_paid'      => true,
+            'order_id'     => $orderId,
+            'redirect_url' => $redirectUrl,
+            'message'      => 'Test line order created! Redirecting to secure payment checkout...'
+        ]);
+    } else {
+        // ─── FREE TRIAL MODE: Record Lead & Send Instant Notifications ────────
+        $stmt = $pdo->prepare("INSERT INTO `trial_leads` (`full_name`, `email`, `whatsapp`, `device`, `app`, `status`) VALUES (?, ?, ?, ?, ?, 'Pending')");
+        $stmt->execute([$fullName, $email, $whatsapp, $device, $app]);
+        $leadId = (int)$pdo->lastInsertId();
+
+        // Deliver Customer Email, Admin Alert Email & Pushover Push to Admin
+        notifyTrialLead($leadId);
+
+        echo json_encode([
+            'success' => true,
+            'is_paid' => false,
+            'lead_id' => $leadId,
+            'message' => 'Your 24h free trial request has been registered successfully! Check your email and WhatsApp for details.'
+        ]);
+    }
 } catch (Exception $e) {
-    error_log("Error saving trial lead: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Database error occurred. Please try again or contact WhatsApp support.']);
+    error_log("[TRIAL SUBMISSION ERROR] " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'A system error occurred. Please try again or contact WhatsApp support.']);
 }
