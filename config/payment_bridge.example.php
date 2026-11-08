@@ -28,3 +28,4 @@ function verifyBridgeWebhook(array $payload, string $signature, string $secret):
     $expected = hash_hmac('sha256', json_encode($payload), $secret);
     return hash_equals($expected, trim($signature));
 }
+

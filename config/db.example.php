@@ -36,3 +36,4 @@ try {
 } catch (PDOException $e) {
     error_log("Database Connection Error: " . $e->getMessage());
 }
+
