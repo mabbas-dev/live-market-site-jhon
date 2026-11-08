@@ -327,3 +327,4 @@ function insertTag(type) {
 <?php
 require_once __DIR__ . '/footer.php';
 ?>
+

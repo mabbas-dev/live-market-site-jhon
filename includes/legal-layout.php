@@ -231,3 +231,4 @@ include __DIR__ . '/navbar.php';
 include __DIR__ . '/footer.php';
 include __DIR__ . '/modals.php';
 ?>
+

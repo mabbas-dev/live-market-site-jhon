@@ -5,3 +5,4 @@
  */
 $legalSlug = 'privacy';
 require __DIR__ . '/includes/legal-layout.php';
+

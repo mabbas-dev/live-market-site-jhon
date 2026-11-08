@@ -5,3 +5,4 @@
  */
 $legalSlug = 'dmca';
 require __DIR__ . '/includes/legal-layout.php';
+

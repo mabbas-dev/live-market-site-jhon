@@ -5,3 +5,4 @@
  */
 $legalSlug = 'refund-policy';
 require __DIR__ . '/includes/legal-layout.php';
+

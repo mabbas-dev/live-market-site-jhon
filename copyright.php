@@ -5,3 +5,4 @@
  */
 $legalSlug = 'copyright';
 require __DIR__ . '/includes/legal-layout.php';
+
