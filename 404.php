@@ -132,7 +132,7 @@ include __DIR__ . '/includes/navbar.php';
               <i data-lucide="search" class="w-4 h-4"></i>
             </div>
             <h4 class="font-bold text-slate-900 text-sm group-hover:text-amber-600 transition-colors">Track Your Order</h4>
-            <p class="text-[11px] text-slate-500 mt-1">Find M3U URL, Xtream Codes, and subscription expiry.</p>
+            <p class="text-[11px] text-slate-500 mt-1">Check credentials delivery, activation status, and expiry.</p>
           </a>
 
           <a href="/contact" class="p-4 rounded-2xl bg-white border border-slate-200 hover:border-cyan-400 hover:shadow-md transition-all group tilt-card">

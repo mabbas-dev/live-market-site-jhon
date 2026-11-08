@@ -361,7 +361,7 @@ include __DIR__ . '/includes/navbar.php';
             <i data-lucide="check-circle" class="w-4 h-4 text-cyan-600"></i>
           </h3>
           <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-            Over 95% of orders are provisioned within 60 seconds automatically. Your M3U URL, Xtream Codes API username/password, and portal address are delivered straight to your email and accessible via our <a href="/track-order" class="text-cyan-600 underline font-semibold">Track Order page</a>.
+            Our technical support team prepares your account and our agent connects directly with you on your provided WhatsApp number and Email to deliver your credentials and personalized setup guides. You can also view live status anytime via our <a href="/track-order" class="text-cyan-600 underline font-semibold">Track Order page</a>.
           </p>
         </div>
 

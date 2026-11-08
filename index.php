@@ -933,7 +933,7 @@ include __DIR__ . '/includes/navbar.php';
               <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-slate-400 transition-transform duration-300"></i>
             </button>
             <div class="hidden p-5 pt-0 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100">
-              Our activation system is 100% automated! As soon as your order is confirmed, your M3U Playlist URL, Xtream Codes credentials (Username, Password, Server URL), and full installation tutorials are delivered to your email inbox within 60 seconds and accessible via our <a href="/track-order" class="text-cyan-600 underline font-semibold">Track Order page</a>.
+              As soon as your order is confirmed, our dedicated technical support agent will connect directly with you on your provided WhatsApp number and Email to deliver your personalized credentials and guide you with step-by-step setup assistance. You can also track your order status anytime via our <a href="/track-order" class="text-cyan-600 underline font-semibold">Track Order page</a>.
             </div>
           </div>
 

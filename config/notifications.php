@@ -300,71 +300,60 @@ function buildCustomerActivationEmail(array $order): string {
     $device       = htmlspecialchars($order['device'] ?? 'Smart TV / Firestick');
     $cleanWa      = preg_replace('/[^0-9]/', '', getSetting('contact_whatsapp', '+1 555 019 2831'));
 
-    // Generated credential placeholders for instant customer setup
-    $username = 'ltv_' . strtolower(substr(md5($orderId . 'usr_salt'), 0, 7));
-    $password = substr(md5($orderId . 'pwd_salt'), 0, 8);
-    $serverHost = 'stream.' . getSetting('site_domain', 'livetvmarket.com') . ':8080';
-    $m3uUrl = "http://{$serverHost}/get.php?username={$username}&password={$password}&type=m3u_plus";
-    $epgUrl = "http://{$serverHost}/xmltv.php?username={$username}&password={$password}";
-
     $setupUrl = rtrim($siteUrl, '/') . '/setup';
-    $waText   = urlencode("Hello LIVETVMARKET Support, I received my activation email for Order #LTV-{$orderId}. Can you assist with setup?");
+    $waText   = urlencode("Hello LIVETVMARKET Support, I placed Order #LTV-{$orderId} ({$planName}). Can you please deliver my account credentials and assist with setup?");
     $waUrl    = "https://wa.me/{$cleanWa}?text={$waText}";
 
     $isStore = !empty($order['order_type']) && $order['order_type'] === 'store';
     if ($isStore) {
         $badgeText = "✓ Digital Subscription Order Approved";
-        $introText = "Your payment of <strong style=\"color:#38bdf8;\">{$currency} {$amount}</strong> has been successfully approved. Your digital service credentials are being prepared.";
+        $introText = "Your payment of <strong style=\"color:#38bdf8;\">{$currency} {$amount}</strong> has been successfully approved. Our technical support agent is currently preparing your digital subscription.";
         $credentialsBox = <<<BOX
-        <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-          <div style="font-size: 14px; font-weight: 700; color: #c084fc; margin-bottom: 12px; text-transform: uppercase;">
-            ⚡ Digital Subscription Delivery Details
+        <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 22px; margin-bottom: 24px;">
+          <div style="font-size: 14px; font-weight: 700; color: #c084fc; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+            ⚡ Digital Subscription Agent Dispatch
           </div>
-          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 10px;">
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 12px;">
             Service Plan: <strong style="color:#ffffff;">{$planName}</strong>
           </p>
-          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 10px;">
-            Your dedicated credentials, login steps, and profile PIN are dispatched directly to your WhatsApp (<strong style="color:#34d399;">{$whatsapp}</strong>) and email within 5 to 15 minutes.
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 12px;">
+            Please wait for our support agent to connect with you directly on your provided WhatsApp number (<strong style="color:#34d399;">{$whatsapp}</strong>) and email (<strong style="color:#38bdf8;">{$email}</strong>) with your dedicated login credentials, private profile assignment, and PIN.
           </p>
-          <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px 14px; margin-top: 14px;">
+            <p style="font-size: 12px; color: #34d399; margin: 0; line-height: 1.5;">
+              ⚡ <strong>Need Instant Setup &amp; PIN?</strong> Tap the WhatsApp button below to chat with our 24/7 support agent and get activated immediately.
+            </p>
+          </div>
+          <p style="font-size: 11px; color: #94a3b8; margin: 12px 0 0;">
             ✓ Backed by 100% Full-Term Replacement Warranty
           </p>
         </div>
 BOX;
-        $primaryBtnText = "💬 Connect on WhatsApp for Instant Setup & PIN";
+        $primaryBtnText = "💬 Connect with Agent on WhatsApp for Instant Setup & PIN";
         $primaryBtnUrl  = $waUrl;
     } else {
-        $badgeText = "✓ Order Confirmed & Account Activated";
-        $introText = "Your payment of <strong style=\"color:#38bdf8;\">{$currency} {$amount}</strong> has been successfully approved. Your Anti-Freeze™ 9.9 high-speed streaming subscription is ready.";
+        $badgeText = "✓ Order Confirmed & Account Under Setup";
+        $introText = "Your payment of <strong style=\"color:#38bdf8;\">{$currency} {$amount}</strong> has been successfully approved. Our technical support agent is currently preparing and testing your Anti-Freeze™ 9.9 high-speed streaming subscription.";
         $credentialsBox = <<<BOX
-        <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-          <div style="font-size: 14px; font-weight: 700; color: #00d2ff; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em;">
-            ⚡ Your Xtream Codes & M3U Credentials
+        <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 16px; padding: 22px; margin-bottom: 24px;">
+          <div style="font-size: 14px; font-weight: 700; color: #00d2ff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+            ⚡ Dedicated Agent Account Dispatch
           </div>
-          <div style="margin-bottom: 10px;">
-            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Xtream Server Portal:</span><br>
-            <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #e2e8f0; word-break: break-all;">http://{$serverHost}</code>
-          </div>
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 10px;">
-            <tr>
-              <td width="50%" style="padding-right: 6px;">
-                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Username:</span>
-                <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #00d2ff;">{$username}</code>
-              </td>
-              <td width="50%" style="padding-left: 6px;">
-                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Password:</span>
-                <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #00d2ff;">{$password}</code>
-              </td>
-            </tr>
-          </table>
-          <div style="margin-top: 10px;">
-            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Direct M3U Plus URL:</span><br>
-            <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 11px; color: #e2e8f0; word-break: break-all;">{$m3uUrl}</code>
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 12px;">
+            Subscription Plan: <strong style="color:#ffffff;">{$planName}</strong>
+          </p>
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 12px;">
+            Please wait for our support agent to connect with you directly on your provided WhatsApp number (<strong style="color:#34d399;">{$whatsapp}</strong>) and email (<strong style="color:#38bdf8;">{$email}</strong>) with your personalized credentials and complete setup instructions.
+          </p>
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px 14px; margin-top: 14px;">
+            <p style="font-size: 12px; color: #34d399; margin: 0; line-height: 1.5;">
+              ⚡ <strong>Need Instant Setup Right Now?</strong> Tap the WhatsApp button below to chat immediately with our 24/7 technical desk and receive your line instantly.
+            </p>
           </div>
         </div>
 BOX;
-        $primaryBtnText = "📖 View Step-by-Step Setup Guides &rarr;";
-        $primaryBtnUrl  = $setupUrl;
+        $primaryBtnText = "💬 Connect with Agent on WhatsApp for Instant Setup";
+        $primaryBtnUrl  = $waUrl;
     }
 
     return <<<HTML
@@ -427,18 +416,15 @@ BOX;
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center">
-                    <a href="{$primaryBtnUrl}" target="_blank" style="display: block; width: 88%; padding: 14px 20px; background: linear-gradient(135deg, #00d2ff, #0284c7); color: #070913; font-weight: 800; font-size: 14px; text-decoration: none; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);">
+                    <a href="{$primaryBtnUrl}" target="_blank" style="display: block; width: 88%; padding: 14px 20px; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);">
                       {$primaryBtnText}
-                    </a>
-                  </td>
-                </tr>
                     </a>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding-top: 10px;">
-                    <a href="{$waUrl}" target="_blank" style="display: block; width: 88%; padding: 12px 20px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-weight: 700; font-size: 13px; text-decoration: none; border-radius: 12px; text-align: center;">
-                      💬 Fast-Track VIP WhatsApp Support
+                    <a href="{$setupUrl}" target="_blank" style="display: block; width: 88%; padding: 12px 20px; background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.3); color: #00d2ff; font-weight: 700; font-size: 13px; text-decoration: none; border-radius: 12px; text-align: center;">
+                      📖 View Step-by-Step Setup Guides
                     </a>
                   </td>
                 </tr>
@@ -544,10 +530,10 @@ function buildCustomerTrialEmail(array $lead): string {
                   ⚡ What Happens Next?
                 </div>
                 <p style="margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: #cbd5e1;">
-                  Your free 24-hour playlist (M3U &amp; Xtream Codes login) is being prepared. We will send the full credentials directly to this email (<span style="color:#38bdf8;">{$email}</span>) and to your WhatsApp (<span style="color:#34d399;">{$whatsapp}</span>). Our technical support agents will guide you step-by-step on WhatsApp to configure your line easily.
+                  Please wait for our support agent to connect with you directly on your provided WhatsApp number (<span style="color:#34d399;">{$whatsapp}</span>) and email (<span style="color:#38bdf8;">{$email}</span>) with your test line credentials and quick setup assistance.
                 </p>
                 <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #94a3b8;">
-                  Want your trial activated right now? Click the WhatsApp Fast-Track button below to chat directly with our technical support engineers.
+                  Want your trial activated right now? Click the WhatsApp button below to chat directly with our technical support agent for immediate setup.
                 </p>
               </div>
 
@@ -556,7 +542,7 @@ function buildCustomerTrialEmail(array $lead): string {
                 <tr>
                   <td align="center">
                     <a href="{$waUrl}" target="_blank" style="display: block; width: 88%; padding: 14px 20px; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);">
-                      💬 Fast-Track Trial on WhatsApp &rarr;
+                      💬 Connect with Agent on WhatsApp for Instant Free Trial &rarr;
                     </a>
                   </td>
                 </tr>
@@ -694,15 +680,13 @@ function notifyNewOrder(int $orderId): void {
         $siteUrl = getSetting('site_url', 'https://livetvmarket.com');
         $adminOrdersUrl = rtrim($siteUrl, '/') . '/admin/orders.php';
 
-        // 1. Send Pushover Push Notification to Admin devices
-        $title = "LIVETVMARKET: New Order #LTV-{$order['id']}";
-        $msg = "Customer: {$order['customer_name']}\nPlan: {$order['plan_name']}\nAmount: {$order['currency']} {$order['amount']}\nEmail: {$order['email']}\nWhatsApp: {$order['whatsapp']}";
-        sendPushoverNotification($title, $msg, $adminOrdersUrl, 0, 'pushover');
+        // Unpaid new orders do NOT trigger push notifications to avoid premature alerts.
+        // Pushover push notifications fire strictly when payment is confirmed in notifyOrderPaid().
 
-        // 2. Send Admin Notification Email if enabled
+        // Optional Admin Notification Email for pending queue
         $adminEmail = getSetting('smtp_admin_email', getSetting('contact_email', 'admin@livetvmarket.com'));
         if (!empty($adminEmail)) {
-            $subject = "[NEW ORDER] #LTV-{$order['id']} - {$order['customer_name']} ({$order['currency']} {$order['amount']})";
+            $subject = "[NEW ORDER PENDING] #LTV-{$order['id']} - {$order['customer_name']} ({$order['currency']} {$order['amount']})";
             $html = buildAdminOrderAlertEmail($order, false);
             sendSMTPEmail($adminEmail, 'Administrator', $subject, $html);
         }
@@ -736,9 +720,9 @@ function notifyOrderPaid(int $orderId, string $txid = ''): void {
         $msg = "Customer: {$order['customer_name']}\nPlan: {$order['plan_name']}\nEmail: {$order['email']}\nWhatsApp: {$order['whatsapp']}\nMethod: {$order['payment_channel']}" . (!empty($txid) ? "\nTX: {$txid}" : "");
         sendPushoverNotification($title, $msg, $adminOrdersUrl, 1, 'cashregister');
 
-        // 2. Deliver Activation Credentials Email to Customer via SMTP
+        // 2. Deliver Confirmation Email to Customer via SMTP
         if (!empty($order['email'])) {
-            $custSubject = "Activation Credentials & Setup Details — Order #LTV-{$order['id']}";
+            $custSubject = "Order #LTV-{$order['id']} Confirmed — Agent Setup Details";
             $custHtml = buildCustomerActivationEmail($order);
             $sendRes = sendSMTPEmail($order['email'], $order['customer_name'] ?: 'Customer', $custSubject, $custHtml);
             error_log("[CUSTOMER EMAIL DELIVERY] Order #{$orderId}: " . ($sendRes['success'] ? 'SUCCESS' : ('FAILED - ' . ($sendRes['error'] ?? ''))));

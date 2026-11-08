@@ -1027,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <strong>Payment Method:</strong> ${paymentMethod.toUpperCase()}<br>
             <strong>Total Paid:</strong> ${successTotalFormatted} ${state.currency}<br>
             <div class="mt-3 p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-cyan-800 font-mono text-xs">
-              ✓ Order registered in database! M3U playlist & Xtream credentials sent to your email & WhatsApp.
+              ✓ Order registered! Our technical support agent will connect with you on your WhatsApp (${whatsapp}) and email to deliver your credentials.
             </div>
           `;
         }

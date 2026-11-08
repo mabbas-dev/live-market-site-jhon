@@ -121,9 +121,6 @@ try {
     $stmt->execute([$customerName, $email, $whatsapp, $planTitle, $productId, $varName, $finalAmount, $currency, $country, $device, $paymentChannel, $couponUsed]);
     $orderId = (int)$pdo->lastInsertId();
 
-    // Trigger notification for new store order
-    notifyNewOrder($orderId);
-
     // Create secure signed bridge checkout URL
     $redirectUrl = createBridgeCheckoutUrl([
         'id'            => $orderId,

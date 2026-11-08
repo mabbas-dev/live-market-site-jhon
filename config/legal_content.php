@@ -35,7 +35,7 @@ return [
       Service Delivery & Anti-Freeze™ 9.9 CDN Infrastructure
     </h3>
     <p class="text-sm text-slate-600 leading-relaxed">
-      LIVETVMARKET provides access to private streaming syndication clusters engineered with our proprietary Anti-Freeze™ 9.9 edge caching architecture. Following successful payment confirmation, streaming credentials (including M3U Plus playlists and Xtream Codes API access) are provisioned automatically and delivered to your designated email address and WhatsApp number within 60 seconds.
+      LIVETVMARKET provides access to private streaming syndication clusters engineered with our proprietary Anti-Freeze™ 9.9 edge caching architecture. Following successful payment confirmation, streaming credentials and access instructions are prepared by our technical agents and delivered to your designated WhatsApp number and email address promptly.
     </p>
     <ul class="list-disc pl-5 text-sm text-slate-600 space-y-1">
       <li><strong>Broadcast Quality:</strong> Feeds are transmitted in 4K UHD, 1080p FHD 60FPS, and 720p HD based on available source broadcasts and your connection speed.</li>
@@ -242,7 +242,7 @@ HTML
       Refunds are promptly approved under any of the following circumstances:
     </p>
     <ul class="list-disc pl-5 text-sm text-slate-600 space-y-1.5">
-      <li><strong>Non-Delivery of Credentials:</strong> Failure of the system to dispatch your M3U playlist link or Xtream Codes login within 2 hours of payment confirmation.</li>
+      <li><strong>Non-Delivery of Credentials:</strong> Failure to receive your subscription access details within 24 hours of payment confirmation without technical support intervention.</li>
       <li><strong>Unresolved Channel Outage:</strong> Material server downtime or feed unavailability affecting major broadcast clusters for more than 24 continuous hours.</li>
       <li><strong>Hardware Incompatibility:</strong> Device incompatibility verified by our technical staff despite following standard setup guides for Firestick, Android, or Smart TV.</li>
       <li><strong>Accidental Duplicate Payment:</strong> Inadvertent double charging for the same subscription order.</li>

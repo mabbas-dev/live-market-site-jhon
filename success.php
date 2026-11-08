@@ -93,9 +93,9 @@ $currSymbol = get_currency_symbol($order['currency'] ?? 'USD');
 $cleanWa = preg_replace('/[^0-9]/', '', SUPPORT_WHATSAPP);
 
 if ($isStore) {
-    $waText = urlencode("Hello LIVETVMARKET Support, I completed payment for Digital Order #LTV-{$order['id']} ({$order['plan_name']}). Please send my private profile credentials and PIN.");
+    $waText = urlencode("Hello LIVETVMARKET Support, I completed payment for Order #LTV-{$order['id']} ({$order['plan_name']}). Please send my private profile credentials and PIN on WhatsApp.");
 } else {
-    $waText = urlencode("Hello LIVETVMARKET Support, I just completed payment for Order #LTV-{$order['id']}. Please verify my activation details.");
+    $waText = urlencode("Hello LIVETVMARKET Support, I completed payment for Order #LTV-{$order['id']} ({$order['plan_name']}). Please connect with me to send my credentials on WhatsApp.");
 }
 $waUrl = "https://wa.me/{$cleanWa}?text={$waText}";
 
@@ -128,14 +128,14 @@ include __DIR__ . '/includes/navbar.php';
         <?php else: ?>
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3 uppercase tracking-wider">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Payment Confirmed • Automated Activation
+            Payment Approved • Agent Line Configuration
           </span>
 
           <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Thank You, <?= htmlspecialchars($order['customer_name'] ?? 'Customer') ?>!
           </h1>
           <p class="mt-2 text-base text-slate-600 max-w-xl mx-auto">
-            Your payment has been successfully approved. Your Anti-Freeze™ 9.9 high-speed streaming account is now fully provisioned.
+            Your payment has been successfully approved. Our technical support agent is currently preparing your subscription and will connect with you on WhatsApp shortly.
           </p>
         <?php endif; ?>
 
@@ -205,10 +205,10 @@ include __DIR__ . '/includes/navbar.php';
               <div class="p-4 rounded-2xl bg-cyan-50/70 border border-cyan-200/80 text-xs text-cyan-950 mb-4">
                 <div class="font-bold text-cyan-950 flex items-center gap-1.5 mb-1.5">
                   <i data-lucide="send" class="w-4 h-4 text-cyan-600"></i>
-                  Fast Profile Dispatch in Progress
+                  Support Agent Preparing Your Subscription
                 </div>
                 <p class="leading-relaxed text-slate-600">
-                  Your dedicated account login credentials, private profile assignment, and PIN are being prepared and will be sent directly to your WhatsApp and Email within <strong>5 to 15 minutes</strong>.
+                  Our support agent is currently preparing your dedicated account and private profile. <strong>Please wait for our agent to connect with you directly on your provided WhatsApp number</strong> (<?= htmlspecialchars($order['whatsapp']) ?>) and Email.
                 </p>
                 <div class="mt-2.5 space-y-1 text-slate-800 font-mono text-[11px] bg-white/90 p-2.5 rounded-lg border border-cyan-100">
                   <div><span class="text-slate-500 font-sans">WhatsApp:</span> <strong><?= htmlspecialchars($order['whatsapp']) ?></strong></div>
@@ -284,37 +284,43 @@ include __DIR__ . '/includes/navbar.php';
           <div class="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-                <i data-lucide="mail-check" class="w-5 h-5 text-emerald-600"></i>
-                <h2 class="text-base font-bold text-slate-900">Activation Credentials</h2>
+                <i data-lucide="user-check" class="w-5 h-5 text-cyan-600"></i>
+                <h2 class="text-base font-bold text-slate-900">Agent Account Preparation</h2>
               </div>
 
-              <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-950 mb-4">
-                <div class="font-bold text-emerald-900 flex items-center gap-1.5 mb-1.5">
-                  <i data-lucide="send" class="w-4 h-4 text-emerald-600"></i>
-                  Instant Email Delivery Initiated
+              <div class="p-4 rounded-2xl bg-cyan-50/70 border border-cyan-200/80 text-xs text-cyan-950 mb-4">
+                <div class="font-bold text-cyan-950 flex items-center gap-1.5 mb-1.5">
+                  <i data-lucide="send" class="w-4 h-4 text-cyan-600"></i>
+                  Technical Agent Assigned to Your Order
                 </div>
                 <p class="leading-relaxed text-slate-600">
-                  Your M3U playlist URL, Xtream Codes credentials (Username &amp; Password), and setup guide have been generated and sent to:
+                  Our technical agent is preparing and verifying your dedicated account line. <strong>Please wait for our support agent to connect with you directly on your provided WhatsApp number</strong> (<?= htmlspecialchars($order['whatsapp']) ?>) and Email.
                 </p>
-                <div class="mt-2 font-mono font-bold text-slate-900 bg-white/80 p-2 rounded-lg border border-emerald-200">
-                  <?= htmlspecialchars($order['email']) ?>
+                <div class="mt-2.5 space-y-1 text-slate-800 font-mono text-[11px] bg-white/90 p-2.5 rounded-lg border border-cyan-100">
+                  <div><span class="text-slate-500 font-sans">WhatsApp:</span> <strong><?= htmlspecialchars($order['whatsapp']) ?></strong></div>
+                  <div><span class="text-slate-500 font-sans">Email:</span> <strong><?= htmlspecialchars($order['email']) ?></strong></div>
                 </div>
               </div>
 
-              <div class="text-[11px] text-slate-500 flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-gray-200">
-                <i data-lucide="info" class="w-4 h-4 text-cyan-600 shrink-0 mt-0.5"></i>
-                <span><strong>Check Spam/Junk:</strong> If you do not see the activation email within 2 minutes, please inspect your Spam folder or contact our 24/7 WhatsApp technician.</span>
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1.5">
+                <div class="flex items-center gap-1.5 text-emerald-700 font-bold">
+                  <i data-lucide="zap" class="w-4 h-4"></i>
+                  <span>Need Instant Setup Right Away?</span>
+                </div>
+                <p class="text-slate-500 leading-normal">
+                  Your credentials will be sent directly on WhatsApp. If you want instant activation without any wait, connect with our 24/7 technical desk below.
+                </p>
               </div>
             </div>
 
             <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col gap-2.5">
-              <a href="/setup" class="w-full py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm transition-all">
-                <i data-lucide="book-open" class="w-4 h-4"></i>
-                View Complete Device Setup Guide
-              </a>
               <a href="<?= $waUrl ?>" target="_blank" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm transition-all">
                 <i data-lucide="message-circle" class="w-4 h-4"></i>
-                Fast-Track VIP WhatsApp Support
+                Connect with Agent on WhatsApp for Instant Setup
+              </a>
+              <a href="/setup" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center flex items-center justify-center gap-2 transition-all">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+                View Step-by-Step Setup Guides
               </a>
             </div>
           </div>

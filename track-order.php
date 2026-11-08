@@ -7,7 +7,7 @@
 require_once __DIR__ . '/config/config.php';
 
 $pageTitle = 'Track Order & Subscription Activation - ' . SITE_NAME;
-$pageDesc = 'Check your live subscription order status, activation timeline, and resend your credentials.';
+$pageDesc = 'Check your live subscription order status, activation timeline, and agent contact details.';
 $pageCanonical = SITE_URL . '/track-order';
 $activePage = 'track';
 
@@ -270,19 +270,19 @@ include __DIR__ . '/includes/navbar.php';
                 <!-- Step 3 -->
                 <div class="flex flex-col items-center text-center">
                   <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
-                    <i data-lucide="server" class="w-5 h-5"></i>
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
                   </div>
-                  <h4 class="font-bold text-xs text-slate-900">Anti-Freeze Node Built</h4>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Node Frankfurt #184</p>
+                  <h4 class="font-bold text-xs text-slate-900">Agent Preparing Line</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Dedicated Support Queue</p>
                 </div>
 
                 <!-- Step 4 -->
                 <div class="flex flex-col items-center text-center">
                   <div class="w-10 h-10 rounded-full bg-cyan-600 text-white font-bold flex items-center justify-center mb-3 shadow-md">
-                    <i data-lucide="mail-check" class="w-5 h-5"></i>
+                    <i data-lucide="send" class="w-5 h-5"></i>
                   </div>
-                  <h4 class="font-bold text-xs text-cyan-700">Sent to Inbox</h4>
-                  <p class="text-[11px] text-slate-500 mt-0.5"><?= htmlspecialchars($foundOrder['email']) ?></p>
+                  <h4 class="font-bold text-xs text-cyan-700">Dispatched</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">WhatsApp &amp; Email</p>
                 </div>
 
               </div>
@@ -306,14 +306,14 @@ include __DIR__ . '/includes/navbar.php';
 
             <!-- Action Buttons for IPTV -->
             <div class="flex flex-col sm:flex-row items-center gap-3">
-              <button onclick="alert('Success! Your M3U and Xtream login credentials have been re-dispatched to <?= htmlspecialchars($foundOrder['email']) ?>. Please check your inbox and spam folder.');" class="btn-glow-cyan w-full sm:flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-md">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                <span>Resend Credentials to Email</span>
-              </button>
-              <a href="<?= WHATSAPP_LINK ?>" target="_blank" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+              <a href="<?= WHATSAPP_LINK ?>" target="_blank" class="w-full sm:flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-md">
                 <i data-lucide="message-circle" class="w-4 h-4"></i>
-                <span>Live WhatsApp Support</span>
+                <span>Connect with Agent on WhatsApp for Instant Setup</span>
               </a>
+              <button onclick="alert('Order confirmation has been re-dispatched to <?= htmlspecialchars($foundOrder['email']) ?>. Our technical agent will connect with you directly on your provided WhatsApp number (<?= htmlspecialchars($foundOrder['whatsapp'] ?? '') ?>) with your credentials shortly.');" class="btn-glow-cyan w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span>Resend Status to Email</span>
+              </button>
             </div>
           <?php endif; ?>
 
@@ -323,7 +323,7 @@ include __DIR__ . '/includes/navbar.php';
           <i data-lucide="alert-circle" class="w-12 h-12 text-amber-500 mx-auto mb-3"></i>
           <h3 class="font-bold text-slate-900 text-lg">No Matching Order Found</h3>
           <p class="text-xs text-slate-600 mt-1 max-w-md mx-auto">
-            Please check that your email address or Order ID was typed correctly. If you just placed your order in the last 60 seconds, your credentials may still be transmitting.
+            Please check that your email address or Order ID was typed correctly. If you just placed your order, our technical desk is standing by on WhatsApp to verify your account.
           </p>
         </div>
       <?php endif; ?>
@@ -361,16 +361,16 @@ include __DIR__ . '/includes/navbar.php';
         <?php else: ?>
           <div class="space-y-4 text-xs sm:text-sm text-slate-600">
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <h4 class="font-bold text-slate-900 mb-1">Didn't receive your activation email?</h4>
+              <h4 class="font-bold text-slate-900 mb-1">How will I receive my streaming credentials?</h4>
               <p class="text-xs text-slate-500 leading-relaxed">
-                Automated system emails are sent from <strong>support@livetvmarket.com</strong>. Occasionally, email filters (especially Hotmail and Gmail) direct automated system messages to the <strong>Spam / Junk</strong> folder. Please check there first!
+                Our technical support agent individually configures and tests your line, then contacts you directly on your provided <strong>WhatsApp number</strong> and <strong>Email</strong> with your login credentials and personal setup guidance. If you want instant activation without waiting, message our 24/7 WhatsApp desk anytime.
               </p>
             </div>
 
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <h4 class="font-bold text-slate-900 mb-1">What details will be inside my email?</h4>
+              <h4 class="font-bold text-slate-900 mb-1">Didn't receive your activation email?</h4>
               <p class="text-xs text-slate-500 leading-relaxed">
-                Your email includes: (1) Your custom M3U Playlist link, (2) Xtream Codes API login credentials (Server URL, Username, Password), and (3) Downloader numeric quick codes for TiviMate and IPTV Smarters Pro.
+                Automated system emails are sent from <strong>support@livetvmarket.com</strong>. Occasionally, email filters (especially Hotmail and Gmail) direct automated system messages to the <strong>Spam / Junk</strong> folder. Please check there, or connect with us on WhatsApp for immediate help.
               </p>
             </div>
 

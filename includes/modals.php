@@ -193,13 +193,19 @@
         <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto text-2xl border border-emerald-200">
           ✓
         </div>
-        <h4 class="font-heading font-black text-2xl text-slate-900">Your Test Line is Ready!</h4>
+        <h4 class="font-heading font-black text-2xl text-slate-900">Request Registered!</h4>
         <p class="text-xs text-slate-600">
-          We have generated your 24-hour test playlist. Check your email inbox & spam folder for your M3U link and Xtream codes credentials.
+          Your 24-hour test line request has been received. Our support agent will connect with you directly on your provided WhatsApp number with your credentials and setup guidance.
         </p>
-        <button data-close-modal class="btn-glow-cyan px-6 py-2.5 rounded-xl text-xs font-bold">
-          Close Window
-        </button>
+        <div class="space-y-2 pt-2">
+          <a href="<?= WHATSAPP_LINK ?>" target="_blank" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            Connect on WhatsApp for Instant Test Line
+          </a>
+          <button data-close-modal class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">
+            Close Window
+          </button>
+        </div>
       </div>
 
     </div>
@@ -219,7 +225,7 @@
         </div>
         <div>
           <h3 class="font-heading font-bold text-base text-slate-900 leading-tight">Complete Your Order</h3>
-          <p class="text-[11px] text-slate-400">Instant Automated Line Delivery via Email &amp; WhatsApp</p>
+          <p class="text-[11px] text-slate-400">Fast Delivery to Your WhatsApp &amp; Email by Our 24/7 Agent Desk</p>
         </div>
       </div>
 
