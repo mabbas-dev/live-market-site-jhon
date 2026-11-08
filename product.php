@@ -477,7 +477,7 @@ include __DIR__ . '/includes/navbar.php';
             <div class="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
               <span id="modal-var-name" class="font-semibold text-cyan-800"><?= htmlspecialchars($defaultVar['name'] ?? '') ?></span>
               <span>•</span>
-              <span class="font-mono text-slate-600">📍 <?= htmlspecialchars($visitorCountry) ?></span>
+              <span id="store-country-badge" class="font-mono text-slate-600">📍 <?= htmlspecialchars($visitorCountry) ?></span>
             </div>
           </div>
 
@@ -624,8 +624,13 @@ include __DIR__ . '/includes/navbar.php';
       const prodName = <?= json_encode($product['name']) ?>;
       const productId = <?= (int)$product['id'] ?>;
 
-      // Currency State
-      let activeCurrency = localStorage.getItem('livetv_selected_currency') || (window.CURRENCY_DATA && window.CURRENCY_DATA.detectedCurrency) || 'USD';
+      // Currency State: Auto-detect from CURRENCY_DATA unless user explicitly chose a manual currency
+      let activeCurrency = (window.CURRENCY_DATA && window.CURRENCY_DATA.detectedCurrency) ? window.CURRENCY_DATA.detectedCurrency : 'USD';
+      const userSelected = localStorage.getItem('livetv_selected_currency');
+      const isManual = localStorage.getItem('livetv_user_manual_currency');
+      if (isManual && userSelected && window.CURRENCY_DATA && window.CURRENCY_DATA.rates && window.CURRENCY_DATA.rates[userSelected]) {
+        activeCurrency = userSelected;
+      }
       if (currencySelect) {
         currencySelect.value = activeCurrency;
       }
@@ -749,6 +754,22 @@ include __DIR__ . '/includes/navbar.php';
           renderPricing();
         });
       }
+
+      // Listen for global country / currency updates from main.js
+      window.addEventListener('livetv:currencyUpdated', function(e) {
+        if (!localStorage.getItem('livetv_user_manual_currency')) {
+          if (e.detail && e.detail.currency) {
+            activeCurrency = e.detail.currency;
+            if (currencySelect) currencySelect.value = activeCurrency;
+            if (formCurrency) formCurrency.value = activeCurrency;
+            const badge = document.getElementById('store-country-badge');
+            if (badge && e.detail.country) {
+              badge.textContent = `📍 ${e.detail.country}`;
+            }
+            renderPricing();
+          }
+        }
+      });
 
       // Click on Variation Pill
       varPills.forEach(pill => {

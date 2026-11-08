@@ -136,6 +136,31 @@ if (!function_exists('get_currency_symbol')) {
 }
 
 /**
+ * Extract visitor client IP (handles reverse proxies, Cloudflare, Hostinger CDN)
+ */
+function getClientVisitorIp(): string {
+    $ipKeys = [
+        'HTTP_CF_CONNECTING_IP',
+        'HTTP_X_REAL_IP',
+        'HTTP_X_FORWARDED_FOR',
+        'HTTP_CLIENT_IP',
+        'REMOTE_ADDR'
+    ];
+    foreach ($ipKeys as $key) {
+        if (!empty($_SERVER[$key])) {
+            $parts = explode(',', $_SERVER[$key]);
+            foreach ($parts as $p) {
+                $candidate = trim($p);
+                if (filter_var($candidate, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    return $candidate;
+                }
+            }
+        }
+    }
+    return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+}
+
+/**
  * Detect visitor country from server headers, client cookie, or IP
  * Note: Uses IP address exclusively — NO client permission prompt or browser location access.
  */
@@ -144,14 +169,25 @@ function detectVisitorCountry($forceFresh = false) {
         @session_start();
     }
 
-    // 1. Allow URL test parameter for easy verification (?test_country=PK or ?test_country=GB)
+    // 1. Allow URL test parameter for easy verification (?test_country=PK or ?country=GB)
     if (!empty($_GET['test_country'])) {
         $testCountry = strtoupper(trim($_GET['test_country']));
         $_SESSION['detected_country'] = $testCountry;
+        if (!headers_sent()) {
+            @setcookie('livetv_detected_country', $testCountry, time() + 86400, '/');
+        }
+        return $testCountry;
+    }
+    if (!empty($_GET['country']) && strlen(trim($_GET['country'])) === 2) {
+        $testCountry = strtoupper(trim($_GET['country']));
+        $_SESSION['detected_country'] = $testCountry;
+        if (!headers_sent()) {
+            @setcookie('livetv_detected_country', $testCountry, time() + 86400, '/');
+        }
         return $testCountry;
     }
 
-    // 2. Cloudflare IPCountry header (Always real-time for live production)
+    // 2. Cloudflare IPCountry header (Always real-time when Cloudflare proxy is active)
     if (!empty($_SERVER['HTTP_CF_IPCOUNTRY']) && strlen($_SERVER['HTTP_CF_IPCOUNTRY']) === 2 && $_SERVER['HTTP_CF_IPCOUNTRY'] !== 'XX') {
         $cfCountry = strtoupper($_SERVER['HTTP_CF_IPCOUNTRY']);
         $_SESSION['detected_country'] = $cfCountry;
@@ -168,30 +204,50 @@ function detectVisitorCountry($forceFresh = false) {
         }
     }
 
-    // 4. Local development / Public IP check via fast external lookup
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-    $isLocal = empty($ip) || $ip === '127.0.0.1' || $ip === '::1' || str_starts_with($ip, '192.168.') || str_starts_with($ip, '10.');
-    if ($isLocal || $forceFresh) {
-        $ctx = stream_context_create(['http' => ['timeout' => 1.5, 'ignore_errors' => true]]);
-        $json = @file_get_contents('https://api.country.is/', false, $ctx);
-        if ($json) {
-            $data = json_decode($json, true);
-            if (!empty($data['country']) && strlen($data['country']) === 2) {
-                $code = strtoupper($data['country']);
-                $_SESSION['detected_country'] = $code;
-                return $code;
+    // 4. Fallback to client cookie if already detected by client browser
+    if (!$forceFresh && !empty($_COOKIE['livetv_detected_country']) && strlen($_COOKIE['livetv_detected_country']) === 2) {
+        $cCountry = strtoupper(trim($_COOKIE['livetv_detected_country']));
+        $_SESSION['detected_country'] = $cCountry;
+        return $cCountry;
+    }
+
+    // 5. Cached in PHP session
+    if (!$forceFresh && !empty($_SESSION['detected_country']) && strlen($_SESSION['detected_country']) === 2) {
+        return strtoupper($_SESSION['detected_country']);
+    }
+
+    // 6. Fast Server-Side IP Lookup with Visitor IP
+    $visitorIp = getClientVisitorIp();
+    $isLocal = empty($visitorIp) || $visitorIp === '127.0.0.1' || $visitorIp === '::1' || str_starts_with($visitorIp, '192.168.') || str_starts_with($visitorIp, '10.');
+    $lookupUrl = $isLocal ? 'https://api.country.is/' : ('https://api.country.is/' . urlencode($visitorIp));
+
+    $ctx = stream_context_create(['http' => ['timeout' => 1.8, 'ignore_errors' => true]]);
+    $json = @file_get_contents($lookupUrl, false, $ctx);
+    if ($json) {
+        $data = json_decode($json, true);
+        if (!empty($data['country']) && strlen($data['country']) === 2) {
+            $code = strtoupper($data['country']);
+            $_SESSION['detected_country'] = $code;
+            if (!headers_sent()) {
+                @setcookie('livetv_detected_country', $code, time() + 86400, '/');
             }
+            return $code;
         }
     }
 
-    // 5. Fallback to client cookie ONLY if server headers unavailable and outbound lookup not performed
-    if (!$forceFresh && !empty($_COOKIE['livetv_detected_country']) && strlen($_COOKIE['livetv_detected_country']) === 2) {
-        return strtoupper(trim($_COOKIE['livetv_detected_country']));
-    }
-
-    // 6. Cached in PHP session
-    if (!$forceFresh && !empty($_SESSION['detected_country']) && strlen($_SESSION['detected_country']) === 2) {
-        return strtoupper($_SESSION['detected_country']);
+    // Backup Server-Side IP Lookup: ip-api.com
+    $backupUrl = $isLocal ? 'http://ip-api.com/json/?fields=status,countryCode' : ('http://ip-api.com/json/' . urlencode($visitorIp) . '?fields=status,countryCode');
+    $json2 = @file_get_contents($backupUrl, false, $ctx);
+    if ($json2) {
+        $data2 = json_decode($json2, true);
+        if (!empty($data2['countryCode']) && strlen($data2['countryCode']) === 2) {
+            $code = strtoupper($data2['countryCode']);
+            $_SESSION['detected_country'] = $code;
+            if (!headers_sent()) {
+                @setcookie('livetv_detected_country', $code, time() + 86400, '/');
+            }
+            return $code;
+        }
     }
 
     // Default to US if unknown

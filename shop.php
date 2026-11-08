@@ -462,7 +462,12 @@ include __DIR__ . '/includes/navbar.php';
 
           // Digital Store Products Multi-Currency Converter
           function updateStoreCardsCurrency() {
-            const activeCurrency = localStorage.getItem('livetv_selected_currency') || (window.CURRENCY_DATA && window.CURRENCY_DATA.detectedCurrency) || 'USD';
+            let activeCurrency = (window.CURRENCY_DATA && window.CURRENCY_DATA.detectedCurrency) ? window.CURRENCY_DATA.detectedCurrency : 'USD';
+            const userManual = localStorage.getItem('livetv_user_manual_currency');
+            const savedCurr = localStorage.getItem('livetv_selected_currency');
+            if (userManual && savedCurr && window.CURRENCY_DATA && window.CURRENCY_DATA.rates && window.CURRENCY_DATA.rates[savedCurr]) {
+              activeCurrency = savedCurr;
+            }
             const curr = (window.CURRENCY_DATA && window.CURRENCY_DATA.rates && window.CURRENCY_DATA.rates[activeCurrency]) || { symbol: '$', rate: 1.0 };
             const sym = curr.symbol || '$';
 
@@ -479,6 +484,7 @@ include __DIR__ . '/includes/navbar.php';
 
           updateStoreCardsCurrency();
           window.addEventListener('storage', updateStoreCardsCurrency);
+          window.addEventListener('livetv:currencyUpdated', updateStoreCardsCurrency);
           ['header-currency-select', 'mobile-currency-select'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('change', () => setTimeout(updateStoreCardsCurrency, 50));

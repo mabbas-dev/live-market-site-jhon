@@ -70,9 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Load saved manual preference if user explicitly selected before
+  // Load saved manual preference ONLY if user explicitly selected before
   const savedCurrency = localStorage.getItem('livetv_selected_currency');
-  if (savedCurrency && state.rates[savedCurrency]) {
+  const isManualChoice = localStorage.getItem('livetv_user_manual_currency');
+  if (isManualChoice && savedCurrency && state.rates[savedCurrency]) {
     state.currency = savedCurrency;
   }
 
@@ -161,19 +162,23 @@ document.addEventListener('DOMContentLoaded', () => {
       // Synchronize cookie so PHP gets it on subsequent page requests
       document.cookie = `livetv_detected_country=${detected}; path=/; max-age=86400; SameSite=Lax`;
 
-      // Always update the modal country display with the real detected location!
-      updateCheckoutCountryUI(detected, state.currency);
-
       // Auto-switch currency ONLY if user hasn't manually locked an explicit currency
       const isManual = localStorage.getItem('livetv_user_manual_currency');
       if (!isManual) {
         const mappedCurr = state.countryMap[detected];
         if (mappedCurr && state.rates[mappedCurr]) {
           state.currency = mappedCurr;
-          updatePricingDisplay();
-          updateCheckoutCountryUI(detected, mappedCurr);
+          localStorage.setItem('livetv_selected_currency', mappedCurr);
         }
       }
+
+      updatePricingDisplay();
+      updateCheckoutCountryUI(detected, state.currency);
+
+      // Broadcast to other components (shop.php, product.php)
+      window.dispatchEvent(new CustomEvent('livetv:currencyUpdated', {
+        detail: { country: state.detectedCountry, currency: state.currency }
+      }));
     } else {
       updateCheckoutCountryUI(state.detectedCountry, state.currency);
     }
