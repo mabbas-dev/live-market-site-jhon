@@ -1,0 +1,15 @@
+# Blog Directory Sub-Router
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /blog/
+
+    # If the requested file or directory exists inside /blog/, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Rewrite any /blog/<slug> or /blog/<slug>/ cleanly to /blog-details.php?slug=<slug>
+    RewriteRule ^([^/]+)/?$ /blog-details.php?slug=$1 [QSA,L]
+</IfModule>

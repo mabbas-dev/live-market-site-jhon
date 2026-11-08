@@ -1,0 +1,19 @@
+# Secret and sensitive configuration files
+config/db.php
+config/payment_bridge.php
+
+# Friend's payment gateway code and keys
+payments.mabbas.dev/
+
+# Database dumps, logs and archives
+*.sql
+*.zip
+*.tar.gz
+*.log
+error_log
+
+# OS & Environment
+.env
+.DS_Store
+Thumbs.db
+node_modules/
