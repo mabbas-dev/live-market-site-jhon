@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $successMsg = "All settings have been successfully updated in database 'iptv-website'! Changes are immediately live across the entire storefront.";
+    $successMsg = "All settings have been successfully updated! Changes are immediately live across the entire storefront.";
 }
 
 // Fetch current values

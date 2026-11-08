@@ -6,7 +6,7 @@
         <span>&copy; <?= date('Y') ?> <?= htmlspecialchars(SITE_NAME) ?> Administration Panel</span>
         <span>•</span>
         <span class="text-emerald-400 font-mono text-[11px] flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Connected to Database: iptv-website
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> System Active
         </span>
       </div>
       <div class="text-[11px] font-mono text-slate-500">

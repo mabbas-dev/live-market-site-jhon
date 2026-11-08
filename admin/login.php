@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <span>LIVETV</span>
         <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">MARKET</span>
       </h1>
-      <p class="text-xs text-slate-400 mt-1 font-medium">Administrator Control Portal • Database: <code class="text-cyan-300 font-mono">iptv-website</code></p>
+      <p class="text-xs text-slate-400 mt-1 font-medium">Administrator Control Portal • Secure 256-Bit Session</p>
     </div>
 
     <!-- Login Box -->

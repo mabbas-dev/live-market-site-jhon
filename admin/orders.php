@@ -298,46 +298,15 @@ try {
                   <div class="flex items-center justify-end gap-1.5">
                     
                     <?php 
-                    // Generate Credentials for Delivery
-                    $custName = $o['customer_name'] ?: 'Customer';
-                    $username = 'ltv_' . strtolower(substr(md5($o['id'] . 'usr_salt'), 0, 7));
-                    $password = substr(md5($o['id'] . 'pwd_salt'), 0, 8);
-                    $serverHost = 'stream.' . getSetting('site_domain', 'livetvmarket.com') . ':8080';
-                    $m3u = "http://{$serverHost}/get.php?username={$username}&password={$password}&type=m3u_plus";
-                    $setupUrl = rtrim(getSetting('site_url', 'https://livetvmarket.com'), '/') . '/setup';
-
                     if (!empty($o['whatsapp'])): 
                       $cleanPhone = preg_replace('/[^0-9]/', '', $o['whatsapp']);
-                      $waMsg = "🔥 *LIVETVMARKET Subscription Delivery*\n"
-                             . "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                             . "👤 *Customer:* {$custName}\n"
-                             . "📦 *Plan:* {$o['plan_name']} ({$o['connections']} Device)\n"
-                             . "💳 *Status:* {$o['status']}\n"
-                             . "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                             . "⚡ *YOUR STREAMING CREDENTIALS:*\n"
-                             . "🌐 *Portal URL:* http://{$serverHost}\n"
-                             . "🔑 *Username:* `{$username}`\n"
-                             . "🔒 *Password:* `{$password}`\n"
-                             . "🔗 *Direct M3U URL:* {$m3u}\n"
-                             . "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                             . "📖 *Installation Guide:* {$setupUrl}\n"
-                             . "💬 Reply here anytime if you need setup assistance!";
+                      $custName = $o['customer_name'] ?: 'Customer';
+                      $simpleMsg = "Hello {$custName}, we received your order #{$o['id']} ({$o['plan_name']}) at LIVETVMARKET. How can we assist you with your setup today?";
                     ?>
-                      <a href="https://wa.me/<?= $cleanPhone ?>?text=<?= urlencode($waMsg) ?>" target="_blank" title="Deliver full credentials via WhatsApp"
+                      <a href="https://wa.me/<?= $cleanPhone ?>?text=<?= urlencode($simpleMsg) ?>" target="_blank" title="Contact customer on WhatsApp"
                         class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-colors">
                         <i data-lucide="message-circle" class="w-4 h-4"></i>
                       </a>
-                    <?php endif; ?>
-
-                    <!-- Send Credentials via SMTP Email -->
-                    <?php if (!empty($o['email'])): ?>
-                      <form action="orders.php" method="POST" class="inline" onsubmit="return confirm('Send full streaming activation email to <?= htmlspecialchars($o['email']) ?> via SMTP?');">
-                        <input type="hidden" name="action" value="send_email">
-                        <input type="hidden" name="id" value="<?= $o['id'] ?>">
-                        <button type="submit" class="p-2 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500 hover:text-slate-950 transition-colors" title="Send / Resend Activation Email via SMTP">
-                          <i data-lucide="mail" class="w-4 h-4"></i>
-                        </button>
-                      </form>
                     <?php endif; ?>
 
                     <!-- Mark as Paid Action (for pending / manual orders) -->

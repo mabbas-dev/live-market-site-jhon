@@ -59,7 +59,7 @@ try {
     <div class="flex items-center gap-2 mb-1">
       <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-[11px] font-bold border border-emerald-500/30 flex items-center gap-1.5">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        DATABASE CONNECTED: iptv-website
+        SYSTEM OPERATIONAL • ALL SERVICES LIVE
       </span>
     </div>
     <h1 class="text-2xl font-black text-white">Welcome back, <?= htmlspecialchars($_SESSION['admin_user'] ?? 'Admin') ?></h1>

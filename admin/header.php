@@ -75,7 +75,7 @@ try {
           <span class="font-black text-lg text-white leading-none">ADMIN <span class="text-cyan-400">PANEL</span></span>
           <span class="text-[9px] font-mono text-emerald-400 mt-1 uppercase tracking-wider flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            iptv-website
+            Control Center
           </span>
         </div>
       </a>
@@ -199,8 +199,6 @@ try {
     <header class="h-16 bg-[#090f20]/90 backdrop-blur-xl border-b border-slate-800/80 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-20">
       <div class="flex items-center gap-3">
         <h2 class="text-base font-bold text-white"><?= $adminTitle ?? 'Dashboard' ?></h2>
-        <span class="text-xs text-slate-500 hidden sm:inline">•</span>
-        <span class="text-xs text-slate-400 font-mono hidden sm:inline">MySQL Database: <strong class="text-cyan-400">iptv-website</strong></span>
       </div>
 
       <div class="flex items-center gap-3 text-xs">
