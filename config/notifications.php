@@ -561,3 +561,4 @@ function notifyOrderPaid(int $orderId, string $txid = ''): void {
         error_log("[NOTIFY ORDER PAID ERROR] " . $e->getMessage());
     }
 }
+

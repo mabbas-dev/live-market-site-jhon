@@ -373,3 +373,4 @@ $pushoverPriority = getSetting('pushover_priority', '0');
 <?php
 require_once __DIR__ . '/footer.php';
 ?>
+
