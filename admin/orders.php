@@ -64,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // Search and filter
 $statusFilter = $_GET['status'] ?? 'all';
+$typeFilter = $_GET['type'] ?? 'all';
 $searchQuery = trim($_GET['search'] ?? '');
 
 $sql = "SELECT * FROM `orders` WHERE 1=1";
@@ -72,6 +73,12 @@ $params = [];
 if ($statusFilter !== 'all') {
     $sql .= " AND `status` = ?";
     $params[] = ucfirst($statusFilter);
+}
+
+if ($typeFilter === 'store') {
+    $sql .= " AND `order_type` = 'store'";
+} elseif ($typeFilter === 'iptv') {
+    $sql .= " AND (`order_type` IS NULL OR `order_type` != 'store')";
 }
 
 if (!empty($searchQuery)) {
@@ -261,8 +268,15 @@ try {
                   <?php endif; ?>
                 </td>
                 <td class="p-4">
+                  <?php if (!empty($o['order_type']) && $o['order_type'] === 'store'): ?>
+                    <span class="px-2 py-0.5 rounded font-mono text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 mb-1 inline-block">Digital Service</span>
+                  <?php else: ?>
+                    <span class="px-2 py-0.5 rounded font-mono text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 mb-1 inline-block">IPTV Plan</span>
+                  <?php endif; ?>
                   <div class="font-semibold text-white"><?= htmlspecialchars($o['plan_name']) ?></div>
-                  <span class="text-[10px] text-slate-400 font-mono"><?= $o['connections'] ?> Connection(s)</span>
+                  <?php if (empty($o['order_type']) || $o['order_type'] !== 'store'): ?>
+                    <span class="text-[10px] text-slate-400 font-mono"><?= $o['connections'] ?> Connection(s)</span>
+                  <?php endif; ?>
                 </td>
                 <td class="p-4">
                   <div class="font-mono font-bold text-emerald-400 text-sm">

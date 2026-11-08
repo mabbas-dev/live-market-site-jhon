@@ -1,13 +1,18 @@
 <?php
 /**
  * LIVETVMARKET - Dedicated Shop & Pricing Packages Page
- * Full pricing overview, connection calculator, feature comparison table, and instant ordering.
+ * Full pricing overview, connection calculator, and digital store products.
  */
 
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/config/store.php';
 
-$pageTitle = 'Shop Premium 4K IPTV Plans - ' . SITE_NAME;
-$pageDesc = 'Choose your ' . SITE_NAME . ' 4K IPTV subscription package. Full access to ' . TOTAL_CHANNELS . ' live channels and ' . TOTAL_VOD . ' VOD cinema titles with Anti-Freeze™ 9.9. Instant activation.';
+$storeEnabled = isStoreEnabled();
+$storeCategories = $storeEnabled ? getStoreCategories(true) : [];
+$storeProducts = $storeEnabled ? getStoreProducts(null, false, 'in_stock') : [];
+
+$pageTitle = 'Shop Premium Subscriptions & Digital Services - ' . SITE_NAME;
+$pageDesc = 'Choose your ' . SITE_NAME . ' 4K IPTV subscription package and digital streaming services (Netflix, Prime, Spotify, AI tools). Instant activation.';
 $pageCanonical = SITE_URL . '/shop';
 $activePage = 'shop';
 
@@ -157,6 +162,142 @@ include __DIR__ . '/includes/navbar.php';
         <?php endif; ?>
         <?php endforeach; ?>
       </div>
+
+      <?php if ($storeEnabled && !empty($storeProducts)): ?>
+      <!-- DIGITAL STREAMING & APP SERVICES SHOWCASE -->
+      <section id="digital-store" class="mb-20 pt-10 border-t border-slate-200" data-aos="fade-up">
+        
+        <div class="text-center max-w-3xl mx-auto mb-10">
+          <span class="text-xs font-mono font-bold text-cyan-700 uppercase tracking-widest bg-cyan-50 px-3.5 py-1.5 rounded-full border border-cyan-200 shadow-sm">
+            Digital Subscriptions Marketplace
+          </span>
+          <h2 class="mt-4 font-heading font-black text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            Popular Streaming & AI Subscriptions
+          </h2>
+          <p class="mt-3 text-slate-600 text-sm sm:text-base">
+            Dedicated private profiles and upgrades with automated WhatsApp delivery, zero VPN hassle, and 100% replacement warranty.
+          </p>
+
+          <!-- Category Filter Pills -->
+          <?php if (!empty($storeCategories)): ?>
+          <div class="mt-7 flex flex-wrap items-center justify-center gap-2">
+            <button class="store-cat-filter px-4 py-2 rounded-xl text-xs font-bold transition-all bg-cyan-600 text-white shadow-sm cursor-pointer" data-cat="all">
+              All Services
+            </button>
+            <?php foreach ($storeCategories as $sc): ?>
+            <button class="store-cat-filter px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 cursor-pointer" data-cat="<?= htmlspecialchars($sc['slug']) ?>">
+              <?= htmlspecialchars($sc['name']) ?>
+            </button>
+            <?php endforeach; ?>
+          </div>
+          <?php endif; ?>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch" id="store-products-grid">
+          <?php foreach ($storeProducts as $sp): 
+            $catSlug = $sp['category_slug'] ?: 'general';
+            $isOutOfStock = ($sp['status'] === 'out_of_stock');
+            $varsCount = count($sp['variations'] ?? []);
+          ?>
+          <div class="store-prod-card bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-cyan-300 transition-all duration-300 group relative" data-category="<?= htmlspecialchars($catSlug) ?>">
+            
+            <div>
+              <!-- Thumbnail Container -->
+              <div class="h-44 bg-slate-50 rounded-xl flex items-center justify-center p-4 mb-4 relative overflow-hidden border border-slate-100 group-hover:bg-slate-100/60 transition-colors">
+                <?php if (!empty($sp['badge'])): ?>
+                <span class="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-cyan-600 text-white font-mono font-bold text-[10px] shadow-sm">
+                  <?= htmlspecialchars($sp['badge']) ?>
+                </span>
+                <?php endif; ?>
+
+                <?php if ($isOutOfStock): ?>
+                <span class="absolute top-2.5 right-2.5 z-10 px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-mono font-bold text-[10px]">
+                  Sold Out
+                </span>
+                <?php else: ?>
+                <span class="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Instant
+                </span>
+                <?php endif; ?>
+
+                <img 
+                  src="<?= htmlspecialchars($sp['image'] ?: 'assets/images/placeholder-product.png') ?>" 
+                  alt="<?= htmlspecialchars($sp['name']) ?>" 
+                  class="max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                >
+              </div>
+
+              <!-- Category & Name -->
+              <span class="text-[10px] font-mono font-bold text-cyan-700 uppercase bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
+                <?= htmlspecialchars($sp['category_name'] ?: 'Digital') ?>
+              </span>
+
+              <h3 class="font-heading font-bold text-base text-slate-900 mt-2 line-clamp-1 group-hover:text-cyan-600 transition-colors">
+                <a href="/product/<?= urlencode($sp['slug']) ?>"><?= htmlspecialchars($sp['name']) ?></a>
+              </h3>
+
+              <p class="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
+                <?= htmlspecialchars($sp['short_desc']) ?>
+              </p>
+            </div>
+
+            <!-- Price & Button -->
+            <div class="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-400 block font-medium">Starts from</span>
+                <span class="font-heading font-black text-lg text-slate-900 group-hover:text-cyan-600 transition-colors">
+                  $<?= number_format($sp['min_price'], 2) ?>
+                </span>
+                <?php if ($varsCount > 1): ?>
+                <span class="text-[10px] text-slate-400 block"><?= $varsCount ?> options</span>
+                <?php endif; ?>
+              </div>
+
+              <a 
+                href="/product/<?= urlencode($sp['slug']) ?>" 
+                class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-cyan-600 hover:text-white text-slate-800 text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+              >
+                <span>View Plan</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+          </div>
+          <?php endforeach; ?>
+        </div>
+
+      </section>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const filterBtns = document.querySelectorAll('.store-cat-filter');
+          const prodCards = document.querySelectorAll('.store-prod-card');
+
+          filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+              const cat = this.getAttribute('data-cat');
+              
+              filterBtns.forEach(b => {
+                b.classList.remove('bg-cyan-600', 'text-white');
+                b.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+              });
+              this.classList.remove('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+              this.classList.add('bg-cyan-600', 'text-white');
+
+              prodCards.forEach(card => {
+                if (cat === 'all' || card.getAttribute('data-category') === cat) {
+                  card.style.display = 'flex';
+                } else {
+                  card.style.display = 'none';
+                }
+              });
+            });
+          });
+        });
+      </script>
+      <?php endif; ?>
 
       <!-- Trust Pillars & Payment Gateways -->
       <section class="p-8 sm:p-12 rounded-3xl bg-slate-50 border border-slate-200" data-aos="fade-up">

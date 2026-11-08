@@ -14,6 +14,7 @@ $errorMsg = '';
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fields = [
+        'store_enabled',
         'site_name',
         'site_domain',
         'site_url',
@@ -117,7 +118,36 @@ function sVal($key, $default = '') {
 
   <form action="settings.php" method="POST" class="space-y-8">
     
-    <!-- SECTION 1: BRAND IDENTITY -->
+    <!-- STORE ENABLE TOGGLE MODULE -->
+    <div class="glass-card rounded-2xl p-6 sm:p-7 border-slate-800">
+      <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-800">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center">
+            <i data-lucide="store" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm">Digital Store Module (STORE ENABLE)</h3>
+            <p class="text-[11px] text-slate-400">Master switch to turn ON or OFF all digital subscription services (Netflix, Prime, Spotify, etc.)</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full font-mono text-xs font-bold <?= (sVal('store_enabled', '1') === '1') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40' ?>">
+          <?= (sVal('store_enabled', '1') === '1') ? '● ONLINE' : '○ OFFLINE' ?>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">STORE ENABLE STATUS</label>
+          <select name="store_enabled" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-cyan-400 font-bold">
+            <option value="1" <?= (sVal('store_enabled', '1') === '1') ? 'selected' : '' ?>>Enabled — Digital services visible on Shop, Homepage, and direct /product/ URLs</option>
+            <option value="0" <?= (sVal('store_enabled', '1') === '0') ? 'selected' : '' ?>>Disabled — Store services & links are completely hidden from frontend visitors</option>
+          </select>
+        </div>
+        <div class="text-xs text-slate-400 leading-relaxed bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+          When this is <strong class="text-white">Enabled</strong>, customers can browse and order Netflix, Prime, Spotify, etc. smoothly. When <strong class="text-white">Disabled</strong>, all store sections and product URLs are cleanly hidden and only standard IPTV plans remain active.
+        </div>
+      </div>
+    </div>
     <div class="glass-card rounded-2xl p-6 sm:p-7 border-slate-800">
       <div class="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-800">
         <div class="w-8 h-8 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">

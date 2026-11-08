@@ -7,6 +7,11 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/blogs_data.php';
+require_once __DIR__ . '/config/store.php';
+
+$storeEnabled = isStoreEnabled();
+$homeCategories = $storeEnabled ? getStoreCategories(true) : [];
+$homeProducts = $storeEnabled ? getStoreProducts(null, false, 'in_stock') : [];
 
 $pageTitle = SITE_NAME . ' - Premium 4K IPTV Subscription | ' . TOTAL_CHANNELS . ' Channels & VOD';
 $pageDesc = SITE_NAME . ' offers the #1 premium IPTV service with ' . TOTAL_CHANNELS . ' live channels and ' . TOTAL_VOD . ' VOD movies & series. Anti-Freeze™ 9.9 zero-buffering technology, all live sports & PPV in 4K UHD. Instant activation & 24h free trial.';
@@ -488,6 +493,151 @@ include __DIR__ . '/includes/navbar.php';
 
       </div>
     </section>
+
+    <?php if ($storeEnabled && !empty($homeProducts)): ?>
+    <!-- 4.5 DIGITAL SUBSCRIPTIONS MARKETPLACE SHOWCASE -->
+    <section id="digital-subscriptions" class="py-20 lg:py-24 relative bg-white border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-12" data-aos="fade-up" data-aos-duration="700">
+          <span class="text-xs font-mono font-bold text-cyan-700 uppercase tracking-widest bg-cyan-50 px-3.5 py-1.5 rounded-full border border-cyan-200 shadow-sm">
+            Digital Services Marketplace
+          </span>
+          <h2 class="mt-4 font-heading font-black text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            Popular Streaming & AI Subscriptions
+          </h2>
+          <p class="mt-3 text-slate-600 text-sm sm:text-base">
+            Dedicated private profiles, family slots & upgrades for Netflix, Prime Video, Spotify, YouTube, ChatGPT, and Canva. Instant delivery with 100% replacement guarantee.
+          </p>
+
+          <!-- Category Filter Pills -->
+          <?php if (!empty($homeCategories)): ?>
+          <div class="mt-7 flex flex-wrap items-center justify-center gap-2">
+            <button class="home-cat-filter px-4 py-2 rounded-xl text-xs font-bold transition-all bg-cyan-600 text-white shadow-sm cursor-pointer" data-cat="all">
+              All Subscriptions
+            </button>
+            <?php foreach ($homeCategories as $hc): ?>
+            <button class="home-cat-filter px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 cursor-pointer" data-cat="<?= htmlspecialchars($hc['slug']) ?>">
+              <?= htmlspecialchars($hc['name']) ?>
+            </button>
+            <?php endforeach; ?>
+          </div>
+          <?php endif; ?>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch" id="home-store-grid">
+          <?php foreach ($homeProducts as $hp): 
+            $catSlug = $hp['category_slug'] ?: 'general';
+            $isOutOfStock = ($hp['status'] === 'out_of_stock');
+            $varsCount = count($hp['variations'] ?? []);
+          ?>
+          <div class="home-prod-card bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-cyan-300 transition-all duration-300 group relative" data-category="<?= htmlspecialchars($catSlug) ?>">
+            
+            <div>
+              <!-- Thumbnail Container -->
+              <div class="h-44 bg-slate-50 rounded-xl flex items-center justify-center p-4 mb-4 relative overflow-hidden border border-slate-100 group-hover:bg-slate-100/60 transition-colors">
+                <?php if (!empty($hp['badge'])): ?>
+                <span class="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-cyan-600 text-white font-mono font-bold text-[10px] shadow-sm">
+                  <?= htmlspecialchars($hp['badge']) ?>
+                </span>
+                <?php endif; ?>
+
+                <?php if ($isOutOfStock): ?>
+                <span class="absolute top-2.5 right-2.5 z-10 px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-mono font-bold text-[10px]">
+                  Sold Out
+                </span>
+                <?php else: ?>
+                <span class="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Instant
+                </span>
+                <?php endif; ?>
+
+                <img 
+                  src="<?= htmlspecialchars($hp['image'] ?: 'assets/images/placeholder-product.png') ?>" 
+                  alt="<?= htmlspecialchars($hp['name']) ?>" 
+                  class="max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                >
+              </div>
+
+              <!-- Category & Name -->
+              <span class="text-[10px] font-mono font-bold text-cyan-700 uppercase bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
+                <?= htmlspecialchars($hp['category_name'] ?: 'Digital') ?>
+              </span>
+
+              <h3 class="font-heading font-bold text-base text-slate-900 mt-2 line-clamp-1 group-hover:text-cyan-600 transition-colors">
+                <a href="/product/<?= urlencode($hp['slug']) ?>"><?= htmlspecialchars($hp['name']) ?></a>
+              </h3>
+
+              <p class="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
+                <?= htmlspecialchars($hp['short_desc']) ?>
+              </p>
+            </div>
+
+            <!-- Price & Button -->
+            <div class="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-400 block font-medium">Starts from</span>
+                <span class="font-heading font-black text-lg text-slate-900 group-hover:text-cyan-600 transition-colors">
+                  $<?= number_format($hp['min_price'], 2) ?>
+                </span>
+                <?php if ($varsCount > 1): ?>
+                <span class="text-[10px] text-slate-400 block"><?= $varsCount ?> options</span>
+                <?php endif; ?>
+              </div>
+
+              <a 
+                href="/product/<?= urlencode($hp['slug']) ?>" 
+                class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-cyan-600 hover:text-white text-slate-800 text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+              >
+                <span>View Plan</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+          </div>
+          <?php endforeach; ?>
+        </div>
+
+        <div class="mt-10 text-center">
+          <a href="/shop#digital-store" class="inline-flex items-center gap-2 text-sm font-bold text-cyan-600 hover:text-cyan-700 group">
+            <span>Explore All Digital Subscriptions on the Shop Page</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const homeFilterBtns = document.querySelectorAll('.home-cat-filter');
+        const homeProdCards = document.querySelectorAll('.home-prod-card');
+
+        homeFilterBtns.forEach(btn => {
+          btn.addEventListener('click', function() {
+            const cat = this.getAttribute('data-cat');
+            
+            homeFilterBtns.forEach(b => {
+              b.classList.remove('bg-cyan-600', 'text-white');
+              b.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+            });
+            this.classList.remove('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+            this.classList.add('bg-cyan-600', 'text-white');
+
+            homeProdCards.forEach(card => {
+              if (cat === 'all' || card.getAttribute('data-category') === cat) {
+                card.style.display = 'flex';
+              } else {
+                card.style.display = 'none';
+              }
+            });
+          });
+        });
+      });
+    </script>
+    <?php endif; ?>
 
     <!-- 5. DEVICE COMPATIBILITY SPOTLIGHT -->
     <section class="py-16 bg-slate-50 border-y border-slate-200 relative">

@@ -106,6 +106,18 @@ try {
         <span>Pricing & Plans</span>
       </a>
 
+      <div class="px-3 pt-4 pb-1 text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">Digital Store</div>
+
+      <a href="store_products.php" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all <?= in_array($curAdminPage, ['store_products', 'store_product_edit']) ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
+        <i data-lucide="package" class="w-4 h-4 text-cyan-400"></i>
+        <span>Store Products</span>
+      </a>
+
+      <a href="store_categories.php" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all <?= ($curAdminPage === 'store_categories') ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
+        <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i>
+        <span>Store Categories</span>
+      </a>
+
       <a href="coupons.php" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all <?= ($curAdminPage === 'coupons') ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
         <i data-lucide="ticket-percent" class="w-4 h-4 text-cyan-400"></i>
         <span>Promo Coupons</span>

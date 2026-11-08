@@ -291,6 +291,8 @@ function buildCustomerActivationEmail(array $order): string {
     $siteUrl      = getSetting('site_url', 'https://livetvmarket.com');
     $orderId      = $order['id'] ?? '108';
     $customerName = htmlspecialchars($order['customer_name'] ?? 'Customer');
+    $email        = htmlspecialchars($order['email'] ?? '');
+    $whatsapp     = htmlspecialchars($order['whatsapp'] ?? '');
     $planName     = htmlspecialchars($order['plan_name'] ?? '12 Months VIP Access');
     $connections  = htmlspecialchars($order['connections'] ?? '1');
     $amount       = number_format((float)($order['amount'] ?? 74.99), 2);
@@ -308,6 +310,62 @@ function buildCustomerActivationEmail(array $order): string {
     $setupUrl = rtrim($siteUrl, '/') . '/setup';
     $waText   = urlencode("Hello LIVETVMARKET Support, I received my activation email for Order #LTV-{$orderId}. Can you assist with setup?");
     $waUrl    = "https://wa.me/{$cleanWa}?text={$waText}";
+
+    $isStore = !empty($order['order_type']) && $order['order_type'] === 'store';
+    if ($isStore) {
+        $badgeText = "✓ Digital Subscription Order Approved";
+        $introText = "Your payment of <strong style=\"color:#38bdf8;\">{$currency} {$amount}</strong> has been successfully approved. Your digital service credentials are being prepared.";
+        $credentialsBox = <<<BOX
+        <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+          <div style="font-size: 14px; font-weight: 700; color: #c084fc; margin-bottom: 12px; text-transform: uppercase;">
+            ⚡ Digital Subscription Delivery Details
+          </div>
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 10px;">
+            Service Plan: <strong style="color:#ffffff;">{$planName}</strong>
+          </p>
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0 0 10px;">
+            Your dedicated credentials, login steps, and profile PIN are dispatched directly to your WhatsApp (<strong style="color:#34d399;">{$whatsapp}</strong>) and email within 5 to 15 minutes.
+          </p>
+          <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+            ✓ Backed by 100% Full-Term Replacement Warranty
+          </p>
+        </div>
+BOX;
+        $primaryBtnText = "💬 Connect on WhatsApp for Instant Setup & PIN";
+        $primaryBtnUrl  = $waUrl;
+    } else {
+        $badgeText = "✓ Order Confirmed & Account Activated";
+        $introText = "Your payment of <strong style=\"color:#38bdf8;\">{$currency} {$amount}</strong> has been successfully approved. Your Anti-Freeze™ 9.9 high-speed streaming subscription is ready.";
+        $credentialsBox = <<<BOX
+        <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+          <div style="font-size: 14px; font-weight: 700; color: #00d2ff; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em;">
+            ⚡ Your Xtream Codes & M3U Credentials
+          </div>
+          <div style="margin-bottom: 10px;">
+            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Xtream Server Portal:</span><br>
+            <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #e2e8f0; word-break: break-all;">http://{$serverHost}</code>
+          </div>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 10px;">
+            <tr>
+              <td width="50%" style="padding-right: 6px;">
+                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Username:</span>
+                <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #00d2ff;">{$username}</code>
+              </td>
+              <td width="50%" style="padding-left: 6px;">
+                <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Password:</span>
+                <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #00d2ff;">{$password}</code>
+              </td>
+            </tr>
+          </table>
+          <div style="margin-top: 10px;">
+            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Direct M3U Plus URL:</span><br>
+            <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 11px; color: #e2e8f0; word-break: break-all;">{$m3uUrl}</code>
+          </div>
+        </div>
+BOX;
+        $primaryBtnText = "📖 View Step-by-Step Setup Guides &rarr;";
+        $primaryBtnUrl  = $setupUrl;
+    }
 
     return <<<HTML
 <!DOCTYPE html>
@@ -331,7 +389,7 @@ function buildCustomerActivationEmail(array $order): string {
                 {$siteName} <span style="color:#00d2ff;">VIP STREAMING</span>
               </div>
               <div style="margin-top: 8px; display: inline-block; padding: 4px 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 9999px; font-size: 11px; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">
-                ✓ Order Confirmed & Account Activated
+                {$badgeText}
               </div>
             </td>
           </tr>
@@ -343,7 +401,7 @@ function buildCustomerActivationEmail(array $order): string {
                 Welcome, {$customerName}!
               </h1>
               <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #94a3b8;">
-                Your payment of <strong style="color:#38bdf8;">{$currency} {$amount}</strong> has been successfully approved. Your Anti-Freeze™ 9.9 high-speed streaming subscription is ready.
+                {$introText}
               </p>
 
               <!-- Order Summary Card -->
@@ -357,51 +415,23 @@ function buildCustomerActivationEmail(array $order): string {
                   <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$planName}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Active Lines:</td>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$connections} Connection(s)</td>
-                </tr>
-                <tr>
-                  <td style="padding: 14px 18px; font-size: 13px; color: #94a3b8;">Status:</td>
-                  <td style="padding: 14px 18px; font-size: 13px; font-weight: 700; color: #10b981; text-align: right;">● Paid & Active</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Status:</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 700; color: #10b981; text-align: right;">● Paid & Approved</td>
                 </tr>
               </table>
 
-              <!-- Streaming Credentials Box -->
-              <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-                <div style="font-size: 14px; font-weight: 700; color: #00d2ff; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em;">
-                  ⚡ Your Xtream Codes & M3U Credentials
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                  <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Xtream Server Portal:</span><br>
-                  <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #e2e8f0; word-break: break-all;">http://{$serverHost}</code>
-                </div>
-
-                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 10px;">
-                  <tr>
-                    <td width="50%" style="padding-right: 6px;">
-                      <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Username:</span>
-                      <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #00d2ff;">{$username}</code>
-                    </td>
-                    <td width="50%" style="padding-left: 6px;">
-                      <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Password:</span>
-                      <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 13px; color: #00d2ff;">{$password}</code>
-                    </td>
-                  </tr>
-                </table>
-
-                <div style="margin-top: 10px;">
-                  <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Direct M3U Plus URL:</span><br>
-                  <code style="display: block; margin-top: 4px; padding: 8px 12px; background: rgba(0,0,0,0.4); border-radius: 8px; font-family: monospace; font-size: 11px; color: #e2e8f0; word-break: break-all;">{$m3uUrl}</code>
-                </div>
-              </div>
+              <!-- Dynamic Credentials / Delivery Box -->
+              {$credentialsBox}
 
               <!-- Action Buttons -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center">
-                    <a href="{$setupUrl}" target="_blank" style="display: block; width: 88%; padding: 14px 20px; background: linear-gradient(135deg, #00d2ff, #0284c7); color: #070913; font-weight: 800; font-size: 14px; text-decoration: none; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);">
-                      📖 View Step-by-Step Setup Guides &rarr;
+                    <a href="{$primaryBtnUrl}" target="_blank" style="display: block; width: 88%; padding: 14px 20px; background: linear-gradient(135deg, #00d2ff, #0284c7); color: #070913; font-weight: 800; font-size: 14px; text-decoration: none; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);">
+                      {$primaryBtnText}
+                    </a>
+                  </td>
+                </tr>
                     </a>
                   </td>
                 </tr>

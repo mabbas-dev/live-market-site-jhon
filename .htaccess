@@ -20,10 +20,11 @@ ErrorDocument 404 /404.php
     RewriteRule ^blog/?$ blog.php [NC,L]
 
     # Specific clean route for blog articles: /blog/<slug> -> blog-details.php?slug=<slug>
-
-    # Specific alias for refund policy
-    RewriteRule ^refund/?$ refund-policy.php [NC,L]
     RewriteRule ^blog/([^/]+)/?$ blog-details.php?slug=$1 [QSA,NC,L]
+
+    # Digital Store clean routes: /product/<slug> -> product.php?slug=<slug>
+    RewriteRule ^product/([^/]+)/?$ product.php?slug=$1 [QSA,NC,L]
+    RewriteRule ^store/?$ shop.php?tab=store [QSA,NC,L]
 
     # Specific alias for refund policy
     RewriteRule ^refund/?$ refund-policy.php [NC,L]
