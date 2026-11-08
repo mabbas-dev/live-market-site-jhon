@@ -47,9 +47,6 @@ try {
         incrementCouponUsage($couponUsed);
     }
 
-    // Trigger instant notifications (Pushover alert to admin devices like pixel8)
-    notifyNewOrder((int)$orderId);
-
     $redirectUrl = null;
     // If Credit / Debit Card, create secure signed bridge checkout URL
     if (stripos($paymentChannel, 'Card') !== false || stripos($paymentChannel, 'Credit') !== false) {
@@ -61,6 +58,9 @@ try {
             'email'         => $email,
             'whatsapp'      => $whatsapp
         ]);
+    } else {
+        // Only trigger instant notification for manual non-gateway orders
+        notifyNewOrder((int)$orderId);
     }
 
     echo json_encode([

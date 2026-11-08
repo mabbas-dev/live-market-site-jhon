@@ -76,11 +76,19 @@ try {
     // Trigger paid order notifications (Pushover alert with cashregister sound + SMTP emails)
     if ($dbStatus === 'Paid') {
         notifyOrderPaid($orderId, $refId);
-        // Sync matching trial lead if this was a paid test line
+
+        // If this order was a paid test line, record it in trial_leads as Sent
         try {
-            $leadStmt = $pdo->prepare("UPDATE `trial_leads` SET `status` = 'Sent' WHERE `status` LIKE ?");
-            $leadStmt->execute(['%' . $orderId . '%']);
-        } catch (Exception $leadEx) {}
+            $oStmt = $pdo->prepare("SELECT * FROM `orders` WHERE `id` = ? LIMIT 1");
+            $oStmt->execute([$orderId]);
+            $ord = $oStmt->fetch();
+            if ($ord && stripos($ord['plan_name'], 'Test Line') !== false) {
+                $leadStmt = $pdo->prepare("INSERT INTO `trial_leads` (`full_name`, `email`, `whatsapp`, `device`, `app`, `status`) VALUES (?, ?, ?, 'All Devices', '', 'Sent')");
+                $leadStmt->execute([$ord['customer_name'], $ord['email'], $ord['whatsapp']]);
+            }
+        } catch (Exception $leadEx) {
+            error_log("[CALLBACK TRIAL LOG ERROR] " . $leadEx->getMessage());
+        }
     }
 
     http_response_code(200);

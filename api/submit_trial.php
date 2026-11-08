@@ -48,14 +48,7 @@ try {
         $stmt->execute([$fullName, $email, $whatsapp, $planName, $trialPrice, $currency, $country, $deviceStr]);
         $orderId = (int)$pdo->lastInsertId();
 
-        // Also record in trial_leads for admin reference
-        $leadStmt = $pdo->prepare("INSERT INTO `trial_leads` (`full_name`, `email`, `whatsapp`, `device`, `app`, `status`) VALUES (?, ?, ?, ?, ?, ?)");
-        $leadStmt->execute([$fullName, $email, $whatsapp, $device, $app, "Paid Order #LTV-{$orderId}"]);
-
-        // Send instant Pushover push to admin (pixel8) for new order
-        notifyNewOrder($orderId);
-
-        // Generate signed payment bridge URL
+        // Generate signed payment bridge URL (notification & trial record are dispatched after payment in callback.php)
         $redirectUrl = createBridgeCheckoutUrl([
             'id'            => $orderId,
             'amount'        => $trialPrice,
