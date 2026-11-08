@@ -29,7 +29,7 @@ $connections = intval($input['connections'] ?? 1);
 $amount = floatval($input['amount'] ?? 74.99);
 $currency = strtoupper(trim($input['currency'] ?? 'USD'));
 $country = strtoupper(trim($input['country'] ?? 'US'));
-$device = trim($input['device'] ?? 'Firestick');
+$device = 'All Devices';
 $paymentChannel = trim($input['payment_channel'] ?? 'Credit Card');
 $couponUsed = trim($input['coupon_used'] ?? '');
 

@@ -23,37 +23,12 @@ if (!$input) {
 $fullName = trim($input['full_name'] ?? $input['name'] ?? '');
 $email    = trim($input['email'] ?? '');
 $whatsapp = trim($input['whatsapp'] ?? '');
-$device   = trim($input['device'] ?? 'Amazon Firestick 4K');
-$app      = trim($input['app'] ?? 'IPTV Smarters Pro');
+$device   = 'All Devices';
+$app      = '';
 
 if (empty($fullName) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL) || empty($whatsapp)) {
     echo json_encode(['success' => false, 'message' => 'Full Name, a valid Email address, and WhatsApp Number are all required.']);
     exit;
-}
-
-// Map short device / app slugs to readable names if needed
-$deviceNames = [
-    'firestick' => 'Amazon Firestick 4K',
-    'androidtv' => 'Android TV / Box',
-    'smarttv'   => 'Samsung / LG Smart TV',
-    'apple'     => 'Apple TV / iOS',
-    'pc'        => 'Windows / Mac PC',
-    'mag'       => 'MAG / Formuler Box'
-];
-if (isset($deviceNames[strtolower($device)])) {
-    $device = $deviceNames[strtolower($device)];
-}
-
-$appNames = [
-    'smarters'  => 'IPTV Smarters Pro',
-    'tivimate'  => 'TiviMate',
-    'iboplayer' => 'IBO Player',
-    'xciptv'    => 'XCIPTV',
-    'vlc'       => 'VLC Player',
-    'm3u'       => 'Direct M3U URL'
-];
-if (isset($appNames[strtolower($app)])) {
-    $app = $appNames[strtolower($app)];
 }
 
 $trialMode     = strtolower(getSetting('trial_mode', 'free'));
@@ -66,7 +41,7 @@ try {
         $planName  = "Paid {$trialDuration}h Test Line";
         $currency  = 'USD';
         $country   = 'US';
-        $deviceStr = "{$device} ({$app})";
+        $deviceStr = 'All Devices';
 
         // Insert into orders table
         $stmt = $pdo->prepare("INSERT INTO `orders` (`customer_name`, `email`, `whatsapp`, `plan_name`, `connections`, `amount`, `currency`, `country`, `device`, `payment_channel`, `status`) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, 'Credit Card', 'New')");

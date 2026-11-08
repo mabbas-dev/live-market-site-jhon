@@ -935,7 +935,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = (document.getElementById('checkout-name')?.value || '').trim();
       const email = (document.getElementById('checkout-email')?.value || '').trim();
       const whatsapp = (document.getElementById('checkout-whatsapp')?.value || '').trim();
-      const device = document.getElementById('checkout-device')?.value || 'Firestick';
       const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value || 'Credit Card';
 
       if (!name || !email || !whatsapp) {
@@ -969,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
         amount: finalAmount,
         currency: state.currency,
         country: detectedCountry,
-        device: device,
+        device: 'All Devices',
         payment_channel: paymentMethod,
         coupon_used: couponRecord
       };
@@ -1017,9 +1016,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <strong>Customer:</strong> ${name}<br>
             <strong>Activation Email:</strong> ${email}<br>
             <strong>WhatsApp Number:</strong> ${whatsapp}<br>
-            <strong>Plan:</strong> ${state.selectedPlan.name} (${state.connections} Device Connection${state.connections > 1 ? 's' : ''})<br>
+            <strong>Plan:</strong> ${state.selectedPlan.name} (${state.connections} Connection${state.connections > 1 ? 's' : ''})<br>
             <strong>Detected Country:</strong> ${detectedCountry}<br>
-            <strong>Device Platform:</strong> ${device}<br>
             <strong>Payment Method:</strong> ${paymentMethod.toUpperCase()}<br>
             <strong>Total Paid:</strong> ${successTotalFormatted} ${state.currency}<br>
             <div class="mt-3 p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-cyan-800 font-mono text-xs">

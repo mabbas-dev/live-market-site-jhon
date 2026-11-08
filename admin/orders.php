@@ -254,12 +254,11 @@ try {
                       <span><?= htmlspecialchars($o['whatsapp']) ?></span>
                     </div>
                   <?php endif; ?>
-                  <div class="text-[10px] text-slate-500 mt-1">
-                    Platform: <?= htmlspecialchars($o['device']) ?>
-                    <?php if (!empty($o['country'])): ?>
-                      • <span class="text-cyan-400 font-mono font-bold">📍 <?= htmlspecialchars($o['country']) ?></span>
-                    <?php endif; ?>
-                  </div>
+                  <?php if (!empty($o['country'])): ?>
+                    <div class="text-[10px] text-slate-500 mt-1">
+                      <span class="text-cyan-400 font-mono font-bold">📍 <?= htmlspecialchars($o['country']) ?></span>
+                    </div>
+                  <?php endif; ?>
                 </td>
                 <td class="p-4">
                   <div class="font-semibold text-white"><?= htmlspecialchars($o['plan_name']) ?></div>

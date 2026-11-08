@@ -142,8 +142,7 @@ try {
           <thead>
             <tr class="bg-slate-900/90 text-slate-400 font-mono text-[10px] uppercase border-b border-slate-800">
               <th class="p-4">ID</th>
-              <th class="p-4">User Details</th>
-              <th class="p-4">Device & App</th>
+              <th class="p-4">Lead Contact Details</th>
               <th class="p-4">Status</th>
               <th class="p-4">Submitted At</th>
               <th class="p-4 text-right">Actions</th>
@@ -162,12 +161,6 @@ try {
                       <span><?= htmlspecialchars($l['whatsapp']) ?></span>
                     </div>
                   <?php endif; ?>
-                </td>
-                <td class="p-4">
-                  <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-cyan-300 font-semibold text-[11px]">
-                    <?= htmlspecialchars($l['device']) ?>
-                  </span>
-                  <div class="text-[11px] text-slate-400 mt-1"><?= htmlspecialchars($l['app']) ?></div>
                 </td>
                 <td class="p-4">
                   <?php if ($l['status'] === 'Pending'): ?>

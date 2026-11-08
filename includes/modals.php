@@ -179,31 +179,6 @@
           <p class="text-[10px] text-slate-400 mt-1">Required for instant line delivery and priority setup assistance.</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Your Device</label>
-            <select name="device" class="w-full px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400">
-              <option value="firestick">Amazon Firestick 4K</option>
-              <option value="androidtv">Android TV / Box</option>
-              <option value="smarttv">Samsung / LG Smart TV</option>
-              <option value="apple">Apple TV / iOS</option>
-              <option value="pc">Windows / Mac PC</option>
-              <option value="mag">MAG / Formuler Box</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred App</label>
-            <select name="app" class="w-full px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400">
-              <option value="smarters">IPTV Smarters Pro</option>
-              <option value="tivimate">TiviMate</option>
-              <option value="iboplayer">IBO Player</option>
-              <option value="xciptv">XCIPTV</option>
-              <option value="vlc">VLC Player</option>
-              <option value="m3u">Direct M3U URL</option>
-            </select>
-          </div>
-        </div>
-
         <button type="submit" class="btn-glow-cyan w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider mt-4 cursor-pointer">
           <?= (TRIAL_MODE === 'paid') ? ('Proceed to Test Line ($' . number_format((float)TRIAL_PRICE, 2) . ')') : 'Generate Free Test Line Now' ?>
         </button>
@@ -343,18 +318,6 @@
           <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Number (with Country Code) <span class="text-rose-500">*</span></label>
           <input required id="checkout-whatsapp" name="whatsapp" type="tel" placeholder="+1 555 019 2831" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-400">
           <p class="text-[10px] text-slate-400 mt-1">Required for instant line delivery and priority technical support.</p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Primary Device *</label>
-          <select id="checkout-device" class="w-full px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400">
-            <option value="firestick">Amazon Firestick / Fire TV</option>
-            <option value="android">Android TV / Shield / Smartphone</option>
-            <option value="smarttv">Samsung / LG Smart TV</option>
-            <option value="apple">Apple TV / iPhone / iPad</option>
-            <option value="pc">Windows / Mac</option>
-            <option value="mag">MAG / Formuler (Stalker Portal)</option>
-          </select>
         </div>
 
         <!-- Payment Method Selection -->

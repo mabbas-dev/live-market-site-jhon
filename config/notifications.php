@@ -357,8 +357,8 @@ function buildCustomerActivationEmail(array $order): string {
                   <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$planName}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Device / Platform:</td>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$device} ({$connections} Conn)</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Active Lines:</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$connections} Connection(s)</td>
                 </tr>
                 <tr>
                   <td style="padding: 14px 18px; font-size: 13px; color: #94a3b8;">Status:</td>
@@ -500,15 +500,7 @@ function buildCustomerTrialEmail(array $lead): string {
                 </tr>
                 <tr>
                   <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Service:</td>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">24-Hour Free Test Line (100% Free)</td>
-                </tr>
-                <tr>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Target Device:</td>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$device}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; color: #94a3b8;">Preferred App:</td>
-                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">{$app}</td>
+                  <td style="padding: 14px 18px; border-bottom: 1px dashed rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #ffffff; text-align: right;">24-Hour Free Test Line (All Devices Supported)</td>
                 </tr>
                 <tr>
                   <td style="padding: 14px 18px; font-size: 13px; color: #94a3b8;">Status:</td>
@@ -522,7 +514,7 @@ function buildCustomerTrialEmail(array $lead): string {
                   ⚡ What Happens Next?
                 </div>
                 <p style="margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: #cbd5e1;">
-                  Your free 24-hour playlist (M3U &amp; Xtream Codes login) is being generated for <strong>{$device}</strong>. We will send the full credentials directly to this email (<span style="color:#38bdf8;">{$email}</span>) and to your WhatsApp (<span style="color:#34d399;">{$whatsapp}</span>).
+                  Your free 24-hour playlist (M3U &amp; Xtream Codes login) is being prepared. We will send the full credentials directly to this email (<span style="color:#38bdf8;">{$email}</span>) and to your WhatsApp (<span style="color:#34d399;">{$whatsapp}</span>). Our technical support agents will guide you step-by-step on WhatsApp to configure your line easily.
                 </p>
                 <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #94a3b8;">
                   Want your trial activated right now? Click the WhatsApp Fast-Track button below to chat directly with our technical support engineers.
@@ -541,7 +533,7 @@ function buildCustomerTrialEmail(array $lead): string {
                 <tr>
                   <td align="center" style="padding-top: 10px;">
                     <a href="{$setupUrl}" target="_blank" style="display: block; width: 88%; padding: 12px 20px; background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.3); color: #00d2ff; font-weight: 700; font-size: 13px; text-decoration: none; border-radius: 12px; text-align: center;">
-                      📖 View App Setup Guides ({$app})
+                      📖 View Step-by-Step Setup Guides
                     </a>
                   </td>
                 </tr>
@@ -597,8 +589,6 @@ function buildAdminTrialAlertEmail(array $lead): string {
       <tr><td><strong>Lead Name:</strong></td><td align="right">{$customerName}</td></tr>
       <tr><td><strong>Email:</strong></td><td align="right">{$email}</td></tr>
       <tr><td><strong>WhatsApp:</strong></td><td align="right">{$whatsapp}</td></tr>
-      <tr><td><strong>Device:</strong></td><td align="right">{$device}</td></tr>
-      <tr><td><strong>App:</strong></td><td align="right">{$app}</td></tr>
       <tr><td><strong>Submitted:</strong></td><td align="right">{$createdAt}</td></tr>
     </table>
 
@@ -676,7 +666,7 @@ function notifyNewOrder(int $orderId): void {
 
         // 1. Send Pushover Push Notification to Admin devices
         $title = "LIVETVMARKET: New Order #LTV-{$order['id']}";
-        $msg = "Customer: {$order['customer_name']}\nPlan: {$order['plan_name']}\nAmount: {$order['currency']} {$order['amount']}\nDevice: {$order['device']}\nEmail: {$order['email']}";
+        $msg = "Customer: {$order['customer_name']}\nPlan: {$order['plan_name']}\nAmount: {$order['currency']} {$order['amount']}\nEmail: {$order['email']}\nWhatsApp: {$order['whatsapp']}";
         sendPushoverNotification($title, $msg, $adminOrdersUrl, 0, 'pushover');
 
         // 2. Send Admin Notification Email if enabled
@@ -755,7 +745,7 @@ function notifyTrialLead(int $leadId): void {
 
         // 1. Send Pushover Push Notification to Admin devices (e.g. pixel8)
         $title = "🎁 Free Trial: {$lead['full_name']}";
-        $msg = "Customer: {$lead['full_name']}\nDevice: {$lead['device']}\nApp: {$lead['app']}\nEmail: {$lead['email']}\nWhatsApp: {$lead['whatsapp']}";
+        $msg = "Customer: {$lead['full_name']}\nEmail: {$lead['email']}\nWhatsApp: {$lead['whatsapp']}";
         sendPushoverNotification($title, $msg, $adminTrialsUrl, 0, 'pushover');
 
         // 2. Deliver Confirmation Email to Customer via SMTP
@@ -769,7 +759,7 @@ function notifyTrialLead(int $leadId): void {
         // 3. Send Admin Notification Email via SMTP
         $adminEmail = getSetting('smtp_admin_email', getSetting('contact_email', 'admin@livetvmarket.com'));
         if (!empty($adminEmail)) {
-            $adminSubject = "🎁 [NEW TRIAL REQUEST] #TR-{$lead['id']} - {$lead['full_name']} ({$lead['device']})";
+            $adminSubject = "🎁 [NEW TRIAL REQUEST] #TR-{$lead['id']} - {$lead['full_name']}";
             $adminHtml = buildAdminTrialAlertEmail($lead);
             sendSMTPEmail($adminEmail, 'Administrator', $adminSubject, $adminHtml);
         }
