@@ -42,6 +42,40 @@ $pageTitle = $article['title'] . ' - ' . SITE_NAME;
 $pageDesc = $article['excerpt'];
 $pageCanonical = SITE_URL . '/blog/' . urlencode($article['slug']);
 $activePage = 'blog';
+$ogType = 'article';
+
+$artImg = !empty($article['thumbnail_url']) 
+    ? (str_starts_with($article['thumbnail_url'], 'http') ? $article['thumbnail_url'] : (rtrim(SITE_URL, '/') . '/' . ltrim($article['thumbnail_url'], '/'))) 
+    : (rtrim(SITE_URL, '/') . '/assets/images/hero-showcase.jpg');
+$pageOgImage = $artImg;
+
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Blog', 'url' => SITE_URL . '/blog'],
+    ['name' => $article['category'], 'url' => SITE_URL . '/blog'],
+    ['name' => $article['title'], 'url' => $pageCanonical]
+];
+
+$articleSchema = [
+    "@type" => "BlogPosting",
+    "@id" => $pageCanonical . "#article",
+    "headline" => $article['title'],
+    "description" => $article['excerpt'],
+    "image" => $artImg,
+    "datePublished" => !empty($article['created_at']) ? date('c', strtotime($article['created_at'])) : date('c'),
+    "dateModified" => !empty($article['updated_at']) ? date('c', strtotime($article['updated_at'])) : date('c'),
+    "author" => [
+        "@type" => "Person",
+        "name" => $article['author'] ?: 'Alex Rivera'
+    ],
+    "publisher" => [
+        "@id" => rtrim(SITE_URL, '/') . '/#organization'
+    ],
+    "mainEntityOfPage" => [
+        "@type" => "WebPage",
+        "@id" => $pageCanonical
+    ]
+];
 
 // Related articles (excluding current)
 $relatedArticles = [];

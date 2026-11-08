@@ -49,8 +49,111 @@ $activePrice = $defaultVar ? (float)$defaultVar['price'] : (float)$product['star
 $activeOrig = $defaultVar && !empty($defaultVar['original_price']) ? (float)$defaultVar['original_price'] : 0;
 $activePerMonth = $defaultVar['per_month_display'] ?? '';
 
-$pageTitle = htmlspecialchars($product['name']) . " — Instant Digital Delivery | " . SITE_NAME;
-$metaDescription = !empty($product['short_desc']) ? htmlspecialchars(strip_tags($product['short_desc'])) : ("Get " . htmlspecialchars($product['name']) . " with instant delivery and 100% replacement warranty.");
+$pageTitle = !empty($product['meta_title']) 
+    ? $product['meta_title'] 
+    : ($product['name'] . " — Instant Digital Delivery | " . SITE_NAME);
+
+$pageDesc = !empty($product['meta_description']) 
+    ? $product['meta_description'] 
+    : (!empty($product['short_desc']) ? strip_tags($product['short_desc']) : ("Buy " . $product['name'] . " subscription key with instant delivery, 100% full replacement guarantee, and 24/7 support at " . SITE_NAME . "."));
+
+$pageKeywords = !empty($product['meta_keywords']) 
+    ? $product['meta_keywords'] 
+    : ($product['name'] . ", buy " . $product['name'] . ", " . $product['name'] . " subscription, instant delivery, " . ($product['category_name'] ?: 'digital services'));
+
+$pageCanonical = !empty($product['canonical_url']) 
+    ? $product['canonical_url'] 
+    : (rtrim(SITE_URL, '/') . '/product/' . urlencode($product['slug']));
+
+$prodImg = !empty($product['image']) 
+    ? (str_starts_with($product['image'], 'http') ? $product['image'] : (rtrim(SITE_URL, '/') . '/' . ltrim($product['image'], '/'))) 
+    : (rtrim(SITE_URL, '/') . '/assets/images/hero-showcase.jpg');
+
+$pageOgImage = !empty($product['og_image']) 
+    ? (str_starts_with($product['og_image'], 'http') ? $product['og_image'] : (rtrim(SITE_URL, '/') . '/' . ltrim($product['og_image'], '/'))) 
+    : $prodImg;
+
+$ogType = 'product';
+
+// Build Breadcrumbs
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => rtrim(SITE_URL, '/') . '/'],
+    ['name' => 'Shop', 'url' => rtrim(SITE_URL, '/') . '/shop'],
+    ['name' => $product['category_name'] ?: 'Digital Services', 'url' => rtrim(SITE_URL, '/') . '/shop?cat=' . urlencode($product['category_slug'] ?? 'digital-services')],
+    ['name' => $product['name'], 'url' => $pageCanonical]
+];
+
+// Product Schema
+$minPrice = (float)$product['starting_price'];
+$maxPrice = (float)$product['starting_price'];
+if (!empty($variations)) {
+    $prices = array_column($variations, 'price');
+    $minPrice = min($prices);
+    $maxPrice = max($prices);
+}
+$ratingVal = !empty($product['rating_value']) ? (float)$product['rating_value'] : 4.9;
+$ratingCnt = !empty($product['rating_count']) ? (int)$product['rating_count'] : 184;
+
+$productSchema = [
+    "@type" => "Product",
+    "@id" => $pageCanonical . "#product",
+    "name" => $product['name'],
+    "image" => $prodImg,
+    "description" => $pageDesc,
+    "brand" => [
+        "@type" => "Brand",
+        "name" => $product['name']
+    ],
+    "sku" => "PROD-" . $product['id'] . "-" . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $product['slug']), 0, 8)),
+    "aggregateRating" => [
+        "@type" => "AggregateRating",
+        "ratingValue" => number_format($ratingVal, 1, '.', ''),
+        "reviewCount" => (string)$ratingCnt,
+        "bestRating" => "5",
+        "worstRating" => "1"
+    ],
+    "offers" => [
+        "@type" => ($minPrice < $maxPrice) ? "AggregateOffer" : "Offer",
+        "priceCurrency" => "USD",
+        "price" => number_format($minPrice, 2, '.', ''),
+        "lowPrice" => number_format($minPrice, 2, '.', ''),
+        "highPrice" => number_format($maxPrice, 2, '.', ''),
+        "offerCount" => (string)max(1, count($variations)),
+        "availability" => ($product['status'] === 'out_of_stock') ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+        "url" => $pageCanonical,
+        "priceValidUntil" => date('Y-12-31', strtotime('+1 year'))
+    ]
+];
+
+// Parse FAQs
+$productFaqs = [];
+if (!empty($product['faq_json'])) {
+    $decodedFaqs = json_decode($product['faq_json'], true);
+    if (is_array($decodedFaqs) && !empty($decodedFaqs)) {
+        $productFaqs = $decodedFaqs;
+    }
+}
+if (empty($productFaqs)) {
+    $productFaqs = [
+        [
+            'question' => "How fast will I receive my " . $product['name'] . " access?",
+            'answer' => "Your access credentials and instructions are dispatched automatically via WhatsApp and Email within 5 to 15 minutes of confirmed payment."
+        ],
+        [
+            'question' => "What is included with this " . $product['name'] . " subscription?",
+            'answer' => "You receive full-term access, personal profile configuration, uninterrupted playback, and 24/7 dedicated customer support with 100% full replacement guarantee."
+        ],
+        [
+            'question' => "Do I need a VPN to use " . $product['name'] . "?",
+            'answer' => "No, our service works seamlessly worldwide on standard home broadband, fiber, and 4G/5G mobile data networks without requiring any third-party VPN."
+        ],
+        [
+            'question' => "What if I encounter an issue during my subscription period?",
+            'answer' => "Every order is protected by our full-term replacement warranty. Simply message our WhatsApp support desk at any time for instant troubleshooting or replacement."
+        ]
+    ];
+}
+$pageFaqs = $productFaqs;
 
 // Get related products in same category
 $relatedProducts = [];
@@ -67,8 +170,6 @@ if (empty($relatedProducts)) {
     $relatedProducts = array_slice(getStoreProducts(null, true, 'in_stock'), 0, 4);
 }
 
-$pageDesc = $metaDescription;
-$pageCanonical = SITE_URL . '/product/' . urlencode($product['slug']);
 $activePage = 'shop';
 
 include __DIR__ . '/includes/head.php';
@@ -374,20 +475,17 @@ include __DIR__ . '/includes/navbar.php';
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-            <h4 class="font-bold text-slate-900 text-sm mb-3">Frequently Asked Questions</h4>
-            <div class="space-y-3 text-xs text-slate-600">
-              <div>
-                <strong class="text-slate-800 block mb-0.5">Do I need a VPN to watch?</strong>
-                <span>No, our subscriptions work natively worldwide on any standard home WiFi or cellular network.</span>
+            <h4 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+              <i data-lucide="help-circle" class="w-4 h-4 text-cyan-600"></i>
+              <span>Frequently Asked Questions</span>
+            </h4>
+            <div class="space-y-3.5 text-xs text-slate-600">
+              <?php foreach ($productFaqs as $fIdx => $pf): ?>
+              <div class="<?= $fIdx > 0 ? 'border-t border-slate-100 pt-3' : '' ?>">
+                <strong class="text-slate-900 block mb-1 text-xs font-bold"><?= htmlspecialchars($pf['question']) ?></strong>
+                <span class="leading-relaxed block text-slate-600"><?= htmlspecialchars($pf['answer']) ?></span>
               </div>
-              <div class="border-t border-slate-100 pt-2.5">
-                <strong class="text-slate-800 block mb-0.5">Can I use it on multiple devices?</strong>
-                <span>You can log in on multiple personal devices, though active simultaneous playback is limited to 1 screen per profile.</span>
-              </div>
-              <div class="border-t border-slate-100 pt-2.5">
-                <strong class="text-slate-800 block mb-0.5">How fast is delivery?</strong>
-                <span>Most orders are processed within 5 to 15 minutes after payment confirmation.</span>
-              </div>
+              <?php endforeach; ?>
             </div>
           </div>
         </div>

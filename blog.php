@@ -9,8 +9,13 @@ require_once __DIR__ . '/config/blogs_data.php';
 
 $pageTitle = SITE_NAME . ' - IPTV Blogs, Setup Tutorials & Streaming Guides (2026)';
 $pageDesc = 'Discover expert IPTV tutorials, Firestick setup walkthroughs, Smart TV player reviews, cord-cutting cost comparisons, and 4K streaming technology insights.';
+$pageKeywords = 'iptv blog, streaming tutorials, firestick setup guide, tivimate pro review, cord cutting 2026, best iptv providers';
 $pageCanonical = SITE_URL . '/blog';
 $activePage = 'blog';
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Blog & Guides', 'url' => SITE_URL . '/blog']
+];
 
 $articles = getBlogArticles();
 $featuredArticle = $articles[0];

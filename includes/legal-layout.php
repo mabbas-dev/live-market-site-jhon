@@ -22,6 +22,11 @@ $activePage    = $legalSlug;
 $pageTitle     = htmlspecialchars($page['title']) . ' | ' . SITE_NAME;
 $pageDesc      = !empty($page['meta_description']) ? htmlspecialchars($page['meta_description']) : ($page['title'] . ' for ' . SITE_NAME . ' subscribers and visitors.');
 $pageCanonical = SITE_URL . '/' . htmlspecialchars($page['slug']);
+$breadcrumbs   = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Legal Policies', 'url' => SITE_URL . '/terms'],
+    ['name' => $page['title'], 'url' => $pageCanonical]
+];
 
 $legalNavItems = [
     'terms' => [

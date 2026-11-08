@@ -16,6 +16,12 @@ ErrorDocument 404 /404.php
     RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
     RewriteRule ^ /%1.php [R=301,L]
 
+    # Dynamic SEO, Sitemap, Robots & LLM AI specifications
+    RewriteRule ^sitemap\.xml$ sitemap.php [NC,L]
+    RewriteRule ^robots\.txt$ robots.php [NC,L]
+    RewriteRule ^llms-full\.txt$ llms.php?full=1 [QSA,NC,L]
+    RewriteRule ^llms\.txt$ llms.php [NC,L]
+
     # Specific clean route for blog listing
     RewriteRule ^blog/?$ blog.php [NC,L]
 

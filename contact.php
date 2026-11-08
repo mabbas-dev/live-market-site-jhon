@@ -1,9 +1,14 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 $activePage = 'contact';
-$pageTitle = 'Contact Us | 24/7 VIP Streaming Support & Technical Desk';
-$pageDesc = 'Get in touch with ' . SITE_NAME . ' 24/7 support. Fast resolution for M3U playlist credentials, device setups, channel requests, and billing.';
+$pageTitle = 'Contact Us | 24/7 VIP Customer Support & Technical Desk — ' . SITE_NAME;
+$pageDesc = 'Get in touch with ' . SITE_NAME . ' 24/7 customer support via WhatsApp or email. Fast resolution for setup questions, billing, and trial requests.';
+$pageKeywords = 'contact iptv, iptv customer support, whatsapp iptv support, livetvmarket help desk';
 $pageCanonical = SITE_URL . '/contact';
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Contact Us', 'url' => SITE_URL . '/contact']
+];
 
 $formSubmitted = false;
 $feedbackMsg = '';

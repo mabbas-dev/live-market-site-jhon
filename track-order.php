@@ -6,10 +6,15 @@
 
 require_once __DIR__ . '/config/config.php';
 
-$pageTitle = 'Track Order & Subscription Activation - ' . SITE_NAME;
-$pageDesc = 'Check your live subscription order status, activation timeline, and agent contact details.';
+$pageTitle = 'Track Order & Subscription Delivery Status — ' . SITE_NAME;
+$pageDesc = 'Check your live order status, activation timeline, and agent contact details at ' . SITE_NAME . '.';
 $pageCanonical = SITE_URL . '/track-order';
+$pageRobots = 'noindex, nofollow';
 $activePage = 'track';
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Track Order', 'url' => SITE_URL . '/track-order']
+];
 
 $searched = false;
 $foundOrder = null;

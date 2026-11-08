@@ -13,8 +13,13 @@ $setupGuides = getSetupGuides(true); // only active
 
 $pageTitle = SITE_NAME . ' - ' . ($setupSettings['title'] ?: 'Complete Device Setup & Installation Guide');
 $pageDesc = $setupSettings['subtitle'] ?: 'Step-by-step installation guides for Firestick, Android TV, Smart TV, Apple TV, Windows, and MAG boxes. Learn how to configure TiviMate, IPTV Smarters, and IBO Player in 3 minutes.';
+$pageKeywords = 'iptv setup, how to install iptv on firestick, tivimate setup, iptv smarters pro xtream codes, ibo player samsung lg, install iptv';
 $pageCanonical = SITE_URL . '/setup';
 $activePage = 'setup';
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Device Setup Guides', 'url' => SITE_URL . '/setup']
+];
 
 include __DIR__ . '/includes/head.php';
 include __DIR__ . '/includes/top-banner.php';

@@ -8,8 +8,13 @@ require_once __DIR__ . '/config/config.php';
 
 $pageTitle = SITE_NAME . ' - ' . TOTAL_CHANNELS . ' Live Channels & VOD Catalog (2026 Updated)';
 $pageDesc = 'Browse our complete list of ' . TOTAL_CHANNELS . ' live TV channels and ' . TOTAL_VOD . ' VOD cinema titles across 60+ countries in 4K UHD and 60FPS. Filter by country, sports, movies, and news.';
+$pageKeywords = 'iptv channels list, live sports channels, ppv stream channels, m3u channel directory, iptv vod catalog, usa uk canada iptv channels';
 $pageCanonical = SITE_URL . '/channels';
 $activePage = 'channels';
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Channels Directory', 'url' => SITE_URL . '/channels']
+];
 
 include __DIR__ . '/includes/head.php';
 include __DIR__ . '/includes/top-banner.php';

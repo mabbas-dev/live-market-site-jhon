@@ -101,6 +101,11 @@ try {
         <span>Site Customization</span>
       </a>
 
+      <a href="seo.php" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all <?= ($curAdminPage === 'seo') ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
+        <i data-lucide="search" class="w-4 h-4 text-emerald-400"></i>
+        <span>SEO & Search Engines</span>
+      </a>
+
       <a href="plans.php" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all <?= ($curAdminPage === 'plans') ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
         <i data-lucide="tags" class="w-4 h-4 text-emerald-400"></i>
         <span>Pricing & Plans</span>

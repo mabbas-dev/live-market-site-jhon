@@ -12,10 +12,15 @@ $storeEnabled = isStoreEnabled();
 $storeCategories = $storeEnabled ? getStoreCategories(true) : [];
 $storeProducts = $storeEnabled ? getStoreProducts(null, false, 'in_stock') : [];
 
-$pageTitle = 'Shop Premium Subscriptions & Digital Services - ' . SITE_NAME;
-$pageDesc = 'Choose your ' . SITE_NAME . ' 4K IPTV subscription package and digital streaming services (Netflix, Prime, Spotify, AI tools). Instant activation.';
+$pageTitle = 'Shop Premium IPTV & Digital Subscriptions — ' . SITE_NAME;
+$pageDesc = 'Explore official ' . SITE_NAME . ' 4K IPTV plans (' . TOTAL_CHANNELS . ' live channels) and digital subscription services (Netflix, Prime Video, Spotify). Instant delivery and 100% guarantee.';
+$pageKeywords = 'shop iptv, buy iptv subscription, digital streaming keys, netflix premium account, amazon prime video, iptv 4k pricing, iptv plans';
 $pageCanonical = SITE_URL . '/shop';
 $activePage = 'shop';
+$breadcrumbs = [
+    ['name' => 'Home', 'url' => SITE_URL . '/'],
+    ['name' => 'Shop & Packages', 'url' => SITE_URL . '/shop']
+];
 
 $dbPlans = getPricingPlans();
 $plansForJs = [];
