@@ -113,3 +113,4 @@ try {
     error_log("[SUBMIT STORE ORDER ERROR] " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'A system error occurred. Please try again or order directly via WhatsApp.']);
 }
+
