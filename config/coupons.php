@@ -2,10 +2,14 @@
 /**
  * LIVETVMARKET - Coupons System & Database Helper
  * Handles % base discount coupons, admin CRUD, validation, and usage tracking.
+ * Supports universal discounts, IPTV-only, Digital Store-only, and specific product restrictions.
  */
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/config.php';
+if (file_exists(__DIR__ . '/store.php')) {
+    require_once __DIR__ . '/store.php';
+}
 
 // Auto-create coupons table if it does not exist
 try {
@@ -38,10 +42,18 @@ try {
             ['LIVETV60', 60, 'all', 'LiveTV VIP 60% OFF Voucher', 0.00, 0, 1],
             ['SPECIAL50', 50, 'all', 'Half Price 50% Special Voucher', 0.00, 0, 1],
             ['VIP20', 20, 'all', 'Returning Customer 20% Discount', 0.00, 0, 1],
+            ['STORE15', 15, 'store_all', '15% OFF All Digital Subscriptions', 0.00, 0, 1],
             ['CRYPTO10', 10, 'all', 'Cryptocurrency 10% Extra Discount', 0.00, 0, 1]
         ];
         foreach ($defaultCoupons as $c) {
             $stmt->execute($c);
+        }
+    } else {
+        // Ensure STORE15 exists as a store coupon sample
+        $chkStore = $pdo->prepare("SELECT `id` FROM `coupons` WHERE `code` = 'STORE15'");
+        $chkStore->execute();
+        if (!$chkStore->fetch()) {
+            $pdo->prepare("INSERT INTO `coupons` (`code`, `discount_percent`, `valid_plans`, `description`, `min_amount`, `usage_limit`, `is_active`) VALUES ('STORE15', 15, 'store_all', '15% OFF All Digital Subscriptions', 0.00, 0, 1)")->execute();
         }
     }
 } catch (Exception $e) {
@@ -86,7 +98,7 @@ function getCouponByCode($code) {
 }
 
 /**
- * Helper to get readable plan names from codes (e.g. '12m' => '12 Months VIP Access')
+ * Helper to get readable plan names from codes (e.g. '12m' => '12 Months VIP Access', 'store_1' => 'Netflix Premium')
  */
 function getPlanNamesByCodes($codes) {
     if (!is_array($codes)) {
@@ -94,11 +106,38 @@ function getPlanNamesByCodes($codes) {
     }
     $allPlans = function_exists('getPricingPlans') ? getPricingPlans() : [];
     $names = [];
+
     foreach ($codes as $c) {
         $clean = strtolower(trim($c));
+        if ($clean === 'all') {
+            $names[] = 'All Products & Services';
+            continue;
+        }
+        if ($clean === 'iptv_all') {
+            $names[] = 'All IPTV Packages';
+            continue;
+        }
+        if ($clean === 'store_all') {
+            $names[] = 'All Digital Store Subscriptions';
+            continue;
+        }
+
+        // Check if store product
+        if (strpos($clean, 'store_') === 0) {
+            $spId = (int)substr($clean, 6);
+            if ($spId > 0 && function_exists('getStoreProductById')) {
+                $sp = getStoreProductById($spId);
+                if ($sp) {
+                    $names[] = $sp['name'];
+                    continue;
+                }
+            }
+        }
+
+        // Check IPTV plan
         $found = false;
         foreach ($allPlans as $p) {
-            if (strtolower($p['plan_code']) === $clean) {
+            if (strtolower($p['plan_code']) === $clean || strtolower('iptv_' . $p['plan_code']) === $clean) {
                 $names[] = $p['name'];
                 $found = true;
                 break;
@@ -123,8 +162,10 @@ function getPlanNamesByCodes($codes) {
  * @param string $code
  * @param float $amount
  * @param string $plan Plan code (e.g. '1m', '3m', '6m', '12m', '24m')
+ * @param string $orderType 'iptv' or 'store'
+ * @param int $productId Store Product ID if applicable
  */
-function validateCouponCode($code, $amount = 0.00, $plan = '') {
+function validateCouponCode($code, $amount = 0.00, $plan = '', $orderType = 'iptv', $productId = 0) {
     $cleanCode = strtoupper(trim($code));
     if (empty($cleanCode)) {
         return [
@@ -178,8 +219,26 @@ function validateCouponCode($code, $amount = 0.00, $plan = '') {
     if (!empty($validPlansStr) && strtolower($validPlansStr) !== 'all') {
         $allowedPlans = array_map('strtolower', array_map('trim', explode(',', $validPlansStr)));
         $cleanPlan = strtolower(trim($plan));
+        $cleanOrderType = strtolower(trim($orderType));
+        $prodId = (int)$productId;
 
-        if (!empty($cleanPlan) && !in_array($cleanPlan, $allowedPlans)) {
+        $isAllowed = false;
+        if ($cleanOrderType === 'store') {
+            if (in_array('store_all', $allowedPlans)) {
+                $isAllowed = true;
+            } elseif ($prodId > 0 && (in_array('store_' . $prodId, $allowedPlans) || in_array((string)$prodId, $allowedPlans))) {
+                $isAllowed = true;
+            }
+        } else {
+            // IPTV order
+            if (in_array('iptv_all', $allowedPlans)) {
+                $isAllowed = true;
+            } elseif (!empty($cleanPlan) && (in_array($cleanPlan, $allowedPlans) || in_array('iptv_' . $cleanPlan, $allowedPlans))) {
+                $isAllowed = true;
+            }
+        }
+
+        if (!$isAllowed) {
             $allowedNames = getPlanNamesByCodes($allowedPlans);
             return [
                 'valid' => false,
@@ -219,4 +278,3 @@ function incrementCouponUsage($code) {
         return false;
     }
 }
-

@@ -239,8 +239,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Sync all currency dropdowns across header, mobile drawer, and checkout modal
-    ['header-currency-select', 'mobile-currency-select', 'checkout-currency-select'].forEach(id => {
+    // Update digital store prices if present on page
+    document.querySelectorAll('.store-prod-price').forEach(el => {
+      const base = parseFloat(el.getAttribute('data-base-price') || 0);
+      el.textContent = formatMoney(base * curr.rate, state.currency);
+    });
+
+    // Sync all currency dropdowns across header, mobile drawer, IPTV modal, and store modal
+    ['header-currency-select', 'mobile-currency-select', 'checkout-currency-select', 'store-currency-select'].forEach(id => {
       const selectEl = document.getElementById(id);
       if (selectEl && selectEl.value !== state.currency) {
         selectEl.value = state.currency;
@@ -265,8 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Currency dropdown change handlers (Header, Mobile drawer, Checkout modal)
-  ['header-currency-select', 'mobile-currency-select', 'checkout-currency-select'].forEach(id => {
+  // Currency dropdown change handlers (Header, Mobile drawer, Checkout modal, Store modal)
+  ['header-currency-select', 'mobile-currency-select', 'checkout-currency-select', 'store-currency-select'].forEach(id => {
     const selectEl = document.getElementById(id);
     if (selectEl) {
       selectEl.addEventListener('change', function() {

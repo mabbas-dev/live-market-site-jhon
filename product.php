@@ -6,6 +6,11 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/store.php';
+require_once __DIR__ . '/config/coupons.php';
+
+$modalCurrencies = getCurrencies(true);
+$visitorCountry = detectVisitorCountry();
+$visitorCountryName = getCountryName($visitorCountry);
 
 // If store is disabled globally, redirect to shop
 if (!isStoreEnabled()) {
@@ -235,11 +240,11 @@ include __DIR__ . '/includes/navbar.php';
                     </div>
 
                     <div class="text-right">
-                      <div class="font-heading font-black text-sm text-slate-900">$<?= number_format($vPrice, 2) ?></div>
+                      <div class="font-heading font-black text-sm text-slate-900 var-pill-price" data-base-price="<?= number_format($vPrice, 2, '.', '') ?>">$<?= number_format($vPrice, 2) ?></div>
                       <?php if ($vOutOfStock): ?>
                         <span class="text-[10px] text-rose-600 font-bold">Sold Out</span>
                       <?php elseif ($vOrig > $vPrice): ?>
-                        <span class="text-[10px] text-slate-400 line-through">$<?= number_format($vOrig, 2) ?></span>
+                        <span class="text-[10px] text-slate-400 line-through var-pill-orig" data-base-price="<?= number_format($vOrig, 2, '.', '') ?>">$<?= number_format($vOrig, 2) ?></span>
                       <?php endif; ?>
                     </div>
                   </button>
@@ -464,23 +469,70 @@ include __DIR__ . '/includes/navbar.php';
         </div>
       </div>
 
-      <!-- Order Summary Strip -->
-      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 mb-4 flex items-center justify-between text-xs">
-        <div>
-          <div class="font-bold text-slate-900" id="modal-product-name"><?= htmlspecialchars($product['name']) ?></div>
-          <div class="text-[11px] text-slate-500" id="modal-var-name"><?= htmlspecialchars($defaultVar['name'] ?? '') ?></div>
+      <!-- Order Summary Strip with Currency Selector & Country -->
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 mb-3 text-xs">
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="font-bold text-slate-900 truncate" id="modal-product-name"><?= htmlspecialchars($product['name']) ?></div>
+            <div class="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+              <span id="modal-var-name" class="font-semibold text-cyan-800"><?= htmlspecialchars($defaultVar['name'] ?? '') ?></span>
+              <span>•</span>
+              <span class="font-mono text-slate-600">📍 <?= htmlspecialchars($visitorCountry) ?></span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <select id="store-currency-select" class="px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-900 font-bold text-[11px] shadow-sm focus:outline-none focus:border-cyan-400 cursor-pointer">
+              <?php foreach ($modalCurrencies as $mcur): ?>
+                <option value="<?= htmlspecialchars($mcur['code']) ?>">
+                  <?= htmlspecialchars($mcur['code']) ?> (<?= htmlspecialchars($mcur['symbol']) ?>)
+                </option>
+              <?php endforeach; ?>
+            </select>
+
+            <div class="text-right">
+              <span class="font-heading font-black text-base text-cyan-600 leading-none block" id="modal-price">$<?= number_format($activePrice, 2) ?></span>
+              <span class="text-[9px] text-emerald-600 font-bold block mt-0.5">100% Warranty</span>
+            </div>
+          </div>
         </div>
-        <div class="text-right">
-          <div class="font-heading font-black text-base text-cyan-600" id="modal-price">$<?= number_format($activePrice, 2) ?></div>
-          <div class="text-[10px] text-emerald-600 font-bold">100% Warranty</div>
+
+        <!-- Dynamic Coupon Discount Row -->
+        <div id="store-discount-row" class="hidden mt-2 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-emerald-600 font-medium">
+          <span>Coupon Discount Applied:</span>
+          <span id="store-discount-amount" class="font-bold">-$0.00</span>
         </div>
       </div>
 
+      <!-- Inline Compact Promo Code Input -->
+      <div class="mb-3 space-y-1">
+        <div class="flex items-center gap-1.5">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+            </span>
+            <input 
+              id="store-coupon-code-input"
+              type="text" 
+              placeholder="Promo voucher (e.g. <?= FLASH_PROMO_CODE ?>)" 
+              class="w-full pl-7 pr-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-300 text-slate-900 text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-cyan-500 focus:bg-white placeholder:text-slate-400"
+            >
+          </div>
+          <button id="store-apply-coupon-btn" type="button" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs transition-all shadow-sm cursor-pointer flex-shrink-0">
+            Apply
+          </button>
+        </div>
+        <div id="store-coupon-feedback" class="text-[10px]"></div>
+      </div>
+
       <!-- Checkout Form -->
-      <form id="store-checkout-form" class="space-y-3.5">
+      <form id="store-checkout-form" class="space-y-3">
         <input type="hidden" name="product_id" id="form-product-id" value="<?= (int)$product['id'] ?>">
         <input type="hidden" name="variation_id" id="form-var-id" value="<?= (int)($defaultVar['id'] ?? 0) ?>">
         <input type="hidden" name="amount" id="form-amount" value="<?= number_format($activePrice, 2, '.', '') ?>">
+        <input type="hidden" name="country" id="form-country" value="<?= htmlspecialchars($visitorCountry) ?>">
+        <input type="hidden" name="currency" id="form-currency" value="USD">
+        <input type="hidden" name="coupon_used" id="form-coupon-used" value="">
 
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
@@ -547,8 +599,6 @@ include __DIR__ . '/includes/navbar.php';
       const displayOrig = document.getElementById('display-orig-price');
       const displaySavings = document.getElementById('display-savings');
       const displayPerMonth = document.getElementById('display-per-month');
-      const displayStatusBadge = document.getElementById('display-status-badge');
-      const displayStatusText = document.getElementById('display-status-text');
       const orderBtnText = document.getElementById('order-btn-text');
       const waBtn = document.getElementById('store-whatsapp-btn');
       
@@ -560,15 +610,145 @@ include __DIR__ . '/includes/navbar.php';
       const modalPrice = document.getElementById('modal-price');
       const formVarId = document.getElementById('form-var-id');
       const formAmount = document.getElementById('form-amount');
+      const formCurrency = document.getElementById('form-currency');
+      const formCouponUsed = document.getElementById('form-coupon-used');
 
-      let currentVar = {
-        id: <?= (int)($defaultVar['id'] ?? 0) ?>,
-        name: <?= json_encode($defaultVar['name'] ?? '') ?>,
-        price: '<?= number_format($activePrice, 2, '.', '') ?>'
-      };
+      const currencySelect = document.getElementById('store-currency-select');
+      const storeDiscountRow = document.getElementById('store-discount-row');
+      const storeDiscountAmount = document.getElementById('store-discount-amount');
+      const couponInput = document.getElementById('store-coupon-code-input');
+      const applyCouponBtn = document.getElementById('store-apply-coupon-btn');
+      const couponFeedback = document.getElementById('store-coupon-feedback');
 
       const waPhone = '<?= $waNumClean ?>';
       const prodName = <?= json_encode($product['name']) ?>;
+      const productId = <?= (int)$product['id'] ?>;
+
+      // Currency State
+      let activeCurrency = localStorage.getItem('livetv_selected_currency') || (window.CURRENCY_DATA && window.CURRENCY_DATA.detectedCurrency) || 'USD';
+      if (currencySelect) {
+        currencySelect.value = activeCurrency;
+      }
+      if (formCurrency) {
+        formCurrency.value = activeCurrency;
+      }
+
+      function getRate() {
+        const currData = (window.CURRENCY_DATA && window.CURRENCY_DATA.rates) ? window.CURRENCY_DATA.rates[activeCurrency] : null;
+        return currData ? parseFloat(currData.rate || 1.0) : 1.0;
+      }
+
+      function formatMoney(amount, currCode) {
+        const curr = (window.CURRENCY_DATA && window.CURRENCY_DATA.rates && window.CURRENCY_DATA.rates[currCode]) || { symbol: '$', rate: 1.0 };
+        const sym = curr.symbol || '$';
+        if (currCode === 'PKR' || curr.rate > 50) {
+          return `${sym} ${Math.round(amount).toLocaleString()}`;
+        }
+        return `${sym}${amount.toFixed(2)}`;
+      }
+
+      // Active Variation State (base USD)
+      let currentVar = {
+        id: <?= (int)($defaultVar['id'] ?? 0) ?>,
+        name: <?= json_encode($defaultVar['name'] ?? '') ?>,
+        usdPrice: <?= (float)$activePrice ?>,
+        usdOrig: <?= (float)($defaultVar['original_price'] ?? 0) ?>,
+        perMonth: <?= json_encode($defaultVar['per_month_display'] ?? '') ?>
+      };
+
+      // Active Coupon State
+      let activeCoupon = {
+        code: '',
+        discountRate: 0,
+        discountPercent: 0
+      };
+
+      // Central Price Rendering Function
+      function renderPricing() {
+        const rate = getRate();
+        const baseConverted = currentVar.usdPrice * rate;
+        let finalConverted = baseConverted;
+
+        // Apply discount if active coupon
+        if (activeCoupon.discountRate > 0) {
+          const discountVal = baseConverted * activeCoupon.discountRate;
+          finalConverted = Math.max(0.01, baseConverted - discountVal);
+          
+          if (storeDiscountRow && storeDiscountAmount) {
+            storeDiscountAmount.textContent = '-' + formatMoney(discountVal, activeCurrency);
+            storeDiscountRow.classList.remove('hidden');
+          }
+        } else {
+          if (storeDiscountRow) {
+            storeDiscountRow.classList.add('hidden');
+          }
+        }
+
+        // Update Modal elements
+        if (modalPrice) modalPrice.textContent = formatMoney(finalConverted, activeCurrency);
+        if (formAmount) formAmount.value = finalConverted.toFixed(2);
+        if (formCurrency) formCurrency.value = activeCurrency;
+        if (formVarId) formVarId.value = currentVar.id;
+        if (modalVarName) modalVarName.textContent = currentVar.name;
+
+        // Update Product Page Display elements
+        if (displayPrice) displayPrice.textContent = formatMoney(baseConverted, activeCurrency);
+        if (orderBtnText) orderBtnText.textContent = `Order Now (${formatMoney(baseConverted, activeCurrency)})`;
+
+        // Update original crossed out price & savings
+        if (currentVar.usdOrig > currentVar.usdPrice) {
+          const origConverted = currentVar.usdOrig * rate;
+          if (displayOrig) {
+            displayOrig.textContent = formatMoney(origConverted, activeCurrency);
+            displayOrig.classList.remove('hidden');
+          }
+          if (displaySavings) {
+            const pct = Math.round(((currentVar.usdOrig - currentVar.usdPrice) / currentVar.usdOrig) * 100);
+            displaySavings.textContent = `Save ${pct}%`;
+            displaySavings.classList.remove('hidden');
+          }
+        } else {
+          if (displayOrig) displayOrig.classList.add('hidden');
+          if (displaySavings) displaySavings.classList.add('hidden');
+        }
+
+        if (displayPerMonth) displayPerMonth.textContent = currentVar.perMonth;
+
+        // Update all variation pills prices on page
+        document.querySelectorAll('.var-pill-price').forEach(el => {
+          const bp = parseFloat(el.getAttribute('data-base-price') || 0);
+          el.textContent = formatMoney(bp * rate, activeCurrency);
+        });
+        document.querySelectorAll('.var-pill-orig').forEach(el => {
+          const bp = parseFloat(el.getAttribute('data-base-price') || 0);
+          el.textContent = formatMoney(bp * rate, activeCurrency);
+        });
+
+        // Update WhatsApp Link
+        const formattedPrice = formatMoney(baseConverted, activeCurrency);
+        const msg = encodeURIComponent(`Hello LIVETVMARKET! I would like to order ${prodName} - ${currentVar.name} (${formattedPrice}). Please guide me with setup!`);
+        if (waBtn) waBtn.href = `https://wa.me/${waPhone}?text=${msg}`;
+      }
+
+      // Initial render on page load
+      renderPricing();
+
+      // Currency Select Change
+      if (currencySelect) {
+        currencySelect.addEventListener('change', function() {
+          activeCurrency = this.value;
+          localStorage.setItem('livetv_selected_currency', activeCurrency);
+          localStorage.setItem('livetv_user_manual_currency', '1');
+          
+          // Sync other currency dropdowns if present
+          ['header-currency-select', 'mobile-currency-select'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.value !== activeCurrency) el.value = activeCurrency;
+          });
+
+          renderPricing();
+        });
+      }
 
       // Click on Variation Pill
       varPills.forEach(pill => {
@@ -588,37 +768,108 @@ include __DIR__ . '/includes/navbar.php';
           const varId = this.getAttribute('data-var-id');
           const varName = this.getAttribute('data-var-name');
 
-          currentVar = { id: varId, name: varName, price: price.toFixed(2) };
-
-          displayPrice.textContent = '$' + price.toFixed(2);
-          orderBtnText.textContent = `Order Now ($${price.toFixed(2)})`;
-
-          if (orig > price) {
-            displayOrig.textContent = '$' + orig.toFixed(2);
-            displayOrig.classList.remove('hidden');
-            const pct = Math.round(((orig - price) / orig) * 100);
-            displaySavings.textContent = `Save ${pct}%`;
-            displaySavings.classList.remove('hidden');
-          } else {
-            displayOrig.classList.add('hidden');
-            displaySavings.classList.add('hidden');
-          }
-
-          displayPerMonth.textContent = perMonth;
-
-          // Update WhatsApp Link
-          const msg = encodeURIComponent(`Hello LIVETVMARKET! I would like to order ${prodName} - ${varName} ($${price.toFixed(2)}). Please guide me with setup!`);
-          waBtn.href = `https://wa.me/${waPhone}?text=${msg}`;
+          currentVar = { id: varId, name: varName, usdPrice: price, usdOrig: orig, perMonth: perMonth };
+          renderPricing();
         });
       });
+
+      // Coupon Validation System
+      function clearCoupon() {
+        activeCoupon = { code: '', discountRate: 0, discountPercent: 0 };
+        if (couponInput) couponInput.value = '';
+        if (formCouponUsed) formCouponUsed.value = '';
+        if (couponFeedback) {
+          couponFeedback.innerHTML = '';
+          couponFeedback.className = 'text-[10px]';
+        }
+        renderPricing();
+      }
+
+      async function applyCoupon() {
+        if (!couponInput) return;
+        const code = couponInput.value.trim().toUpperCase();
+        if (!code) {
+          clearCoupon();
+          return;
+        }
+
+        if (applyCouponBtn) {
+          applyCouponBtn.disabled = true;
+          applyCouponBtn.innerHTML = '<span class="inline-block animate-spin mr-1">⟳</span>';
+        }
+
+        const baseConverted = currentVar.usdPrice * getRate();
+
+        try {
+          const resp = await fetch('/api/validate_coupon.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code: code,
+              amount: baseConverted,
+              type: 'store',
+              product_id: productId
+            })
+          });
+          const data = await resp.json();
+
+          if (data.valid) {
+            activeCoupon = {
+              code: data.code,
+              discountRate: parseFloat(data.discount_rate || 0),
+              discountPercent: parseInt(data.discount_percent || 0)
+            };
+            if (formCouponUsed) formCouponUsed.value = data.code;
+            if (couponFeedback) {
+              couponFeedback.className = 'text-[11px] text-emerald-600 mt-1 font-semibold flex items-center justify-between gap-1 bg-emerald-50 p-2 rounded-lg border border-emerald-200';
+              couponFeedback.innerHTML = `
+                <span>${data.message || `🎉 Coupon ${data.code} applied! ${data.discount_percent}% OFF`}</span>
+                <button type="button" id="store-remove-coupon-btn" class="text-rose-500 hover:text-rose-700 underline text-[10px] font-bold cursor-pointer">Remove</button>
+              `;
+              document.getElementById('store-remove-coupon-btn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                clearCoupon();
+              });
+            }
+          } else {
+            activeCoupon = { code: '', discountRate: 0, discountPercent: 0 };
+            if (formCouponUsed) formCouponUsed.value = '';
+            if (couponFeedback) {
+              couponFeedback.className = 'text-[11px] text-rose-500 mt-1 font-semibold';
+              couponFeedback.textContent = data.message || '❌ Invalid or expired promo code.';
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (couponFeedback) {
+            couponFeedback.className = 'text-[11px] text-rose-500 mt-1 font-semibold';
+            couponFeedback.textContent = '❌ Error validating coupon code. Please try again.';
+          }
+        } finally {
+          if (applyCouponBtn) {
+            applyCouponBtn.disabled = false;
+            applyCouponBtn.innerHTML = 'Apply';
+          }
+          renderPricing();
+        }
+      }
+
+      if (applyCouponBtn) {
+        applyCouponBtn.addEventListener('click', applyCoupon);
+      }
+      if (couponInput) {
+        couponInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            applyCoupon();
+          }
+        });
+      }
 
       // Open Modal
       if (openModalBtn) {
         openModalBtn.addEventListener('click', function() {
-          modalVarName.textContent = currentVar.name;
-          modalPrice.textContent = '$' + currentVar.price;
-          formVarId.value = currentVar.id;
-          formAmount.value = currentVar.price;
+          renderPricing();
           modal.classList.remove('hidden');
         });
       }

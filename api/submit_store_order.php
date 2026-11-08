@@ -7,6 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/store.php';
+require_once __DIR__ . '/../config/coupons.php';
 require_once __DIR__ . '/../config/payment_bridge.php';
 require_once __DIR__ . '/../config/notifications.php';
 
@@ -83,16 +84,41 @@ try {
         exit;
     }
 
-    $amount = $variation ? (float)$variation['price'] : (float)$product['starting_price'];
+    $baseAmount = $variation ? (float)$variation['price'] : (float)$product['starting_price'];
     $varName = $variation ? $variation['name'] : 'Standard Plan';
     $planTitle = "{$product['name']} ({$varName})";
-    $currency = 'USD';
-    $country = 'US';
+    $currency = strtoupper(trim($input['currency'] ?? 'USD'));
+    $country = strtoupper(trim($input['country'] ?? 'US'));
+    $couponUsed = strtoupper(trim($input['coupon_used'] ?? ''));
     $device = 'All Devices';
 
-    // Insert into orders table
-    $stmt = $pdo->prepare("INSERT INTO `orders` (`customer_name`, `email`, `whatsapp`, `plan_name`, `order_type`, `product_id`, `variation_name`, `connections`, `amount`, `currency`, `country`, `device`, `payment_channel`, `status`) VALUES (?, ?, ?, ?, 'store', ?, ?, 1, ?, ?, ?, ?, ?, 'New')");
-    $stmt->execute([$customerName, $email, $whatsapp, $planTitle, $productId, $varName, $amount, $currency, $country, $device, $paymentChannel]);
+    // Currency rate conversion
+    $rate = 1.0;
+    $allCurrencies = function_exists('getCurrencies') ? getCurrencies(true) : [];
+    foreach ($allCurrencies as $ac) {
+        if (strtoupper($ac['code']) === $currency) {
+            $rate = (float)$ac['rate'];
+            break;
+        }
+    }
+    $convertedBaseAmount = round($baseAmount * $rate, 2);
+    $finalAmount = $convertedBaseAmount;
+
+    // Apply Coupon if supplied
+    if (!empty($couponUsed)) {
+        $couponRes = validateCouponCode($couponUsed, $convertedBaseAmount, '', 'store', $productId);
+        if ($couponRes['valid']) {
+            $discountVal = round($convertedBaseAmount * $couponRes['discount_rate'], 2);
+            $finalAmount = max(0.01, round($convertedBaseAmount - $discountVal, 2));
+            incrementCouponUsage($couponUsed);
+        } else {
+            $couponUsed = '';
+        }
+    }
+
+    // Insert into orders table with coupon_used and converted amount
+    $stmt = $pdo->prepare("INSERT INTO `orders` (`customer_name`, `email`, `whatsapp`, `plan_name`, `order_type`, `product_id`, `variation_name`, `connections`, `amount`, `currency`, `country`, `device`, `payment_channel`, `coupon_used`, `status`) VALUES (?, ?, ?, ?, 'store', ?, ?, 1, ?, ?, ?, ?, ?, ?, 'New')");
+    $stmt->execute([$customerName, $email, $whatsapp, $planTitle, $productId, $varName, $finalAmount, $currency, $country, $device, $paymentChannel, $couponUsed]);
     $orderId = (int)$pdo->lastInsertId();
 
     // Trigger notification for new store order
@@ -101,7 +127,7 @@ try {
     // Create secure signed bridge checkout URL
     $redirectUrl = createBridgeCheckoutUrl([
         'id'            => $orderId,
-        'amount'        => $amount,
+        'amount'        => $finalAmount,
         'currency'      => $currency,
         'customer_name' => $customerName,
         'email'         => $email,

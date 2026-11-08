@@ -9,6 +9,7 @@ $curAdminPage = 'coupons';
 
 require_once __DIR__ . '/header.php';
 require_once __DIR__ . '/../config/coupons.php';
+require_once __DIR__ . '/../config/store.php';
 
 $successMsg = '';
 $errorMsg = '';
@@ -127,6 +128,7 @@ try {
 }
 
 $allPricingPlans = function_exists('getPricingPlans') ? getPricingPlans() : [];
+$allStoreProducts = function_exists('getStoreProducts') ? getStoreProducts(null, false, null) : [];
 ?>
 
 <div class="max-w-6xl">
@@ -285,7 +287,15 @@ $allPricingPlans = function_exists('getPricingPlans') ? getPricingPlans() : [];
                   $vp = trim($c['valid_plans'] ?? 'all');
                   if (empty($vp) || strtolower($vp) === 'all'): ?>
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-semibold text-[10px]">
-                      <i data-lucide="globe" class="w-3 h-3"></i> All Products
+                      <i data-lucide="globe" class="w-3 h-3"></i> All Products (Universal)
+                    </span>
+                  <?php elseif (strtolower($vp) === 'iptv_all'): ?>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 font-semibold text-[10px]">
+                      <i data-lucide="tv" class="w-3 h-3"></i> All IPTV Packages Only
+                    </span>
+                  <?php elseif (strtolower($vp) === 'store_all'): ?>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-semibold text-[10px]">
+                      <i data-lucide="sparkles" class="w-3 h-3"></i> All Digital Store Only
                     </span>
                   <?php else: 
                     $pNames = getPlanNamesByCodes($vp);
@@ -415,20 +425,33 @@ $allPricingPlans = function_exists('getPricingPlans') ? getPricingPlans() : [];
       <!-- Applicable Product / Plan Restriction -->
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
-          <span>Applicable Product / Plan <span class="text-rose-400">*</span></span>
+          <span>Applicable Products / Category <span class="text-rose-400">*</span></span>
           <span class="text-[10px] text-cyan-400 font-normal">All or Specific</span>
         </label>
         <select id="modal-valid-plans" name="valid_plans" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-medium focus:outline-none focus:border-cyan-400 cursor-pointer">
-          <option value="all">🌐 All Products / All Plans (Universal Discount)</option>
-          <optgroup label="Specific Plans (Works ONLY on Selected Plan)">
+          <option value="all">🌐 All Products &amp; Services (Universal Discount - IPTV &amp; Digital Store)</option>
+          <option value="iptv_all">📺 All IPTV Streaming Packages Only</option>
+          <option value="store_all">⚡ All Digital Store Subscriptions Only (Netflix, Prime, Spotify, etc.)</option>
+
+          <optgroup label="Specific IPTV Packages">
             <?php foreach ($allPricingPlans as $plan): ?>
               <option value="<?= htmlspecialchars($plan['plan_code']) ?>">
-                🎯 <?= htmlspecialchars($plan['name']) ?> (<?= htmlspecialchars($plan['plan_code']) ?>)
+                📺 <?= htmlspecialchars($plan['name']) ?> (<?= htmlspecialchars($plan['plan_code']) ?>)
               </option>
             <?php endforeach; ?>
           </optgroup>
+
+          <?php if (!empty($allStoreProducts)): ?>
+          <optgroup label="Specific Digital Store Products">
+            <?php foreach ($allStoreProducts as $sp): ?>
+              <option value="store_<?= $sp['id'] ?>">
+                ⚡ <?= htmlspecialchars($sp['name']) ?>
+              </option>
+            <?php endforeach; ?>
+          </optgroup>
+          <?php endif; ?>
         </select>
-        <span class="text-[10px] text-slate-500 mt-1 block">Choose whether this coupon applies to all products or is restricted to a specific package.</span>
+        <span class="text-[10px] text-slate-500 mt-1 block">Choose whether this coupon applies universally or is restricted to IPTV, Digital Store, or a specific product.</span>
       </div>
 
       <!-- Description -->
