@@ -205,160 +205,144 @@
     </div>
   </div>
 
-  <!-- CHECKOUT / ORDER MODAL (Backend-Ready with Coupon Engine) -->
-  <div id="checkout-modal" data-backdrop="static" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-content w-full max-w-lg rounded-2xl p-6 sm:p-8 bg-white border border-cyan-200 shadow-2xl relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation();">
+  <!-- CHECKOUT / ORDER MODAL (Compact No-Scroll Design) -->
+  <div id="checkout-modal" data-backdrop="static" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="modal-content w-full max-w-md rounded-2xl p-5 bg-white border border-cyan-200 shadow-2xl relative" onclick="event.stopPropagation();">
       
-      <button type="button" data-close-modal class="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-all cursor-pointer z-30" aria-label="Close">
-        <i data-lucide="x" class="w-5 h-5"></i>
+      <button type="button" data-close-modal class="absolute top-4 right-4 p-1.5 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-all cursor-pointer z-30" aria-label="Close">
+        <i data-lucide="x" class="w-4 h-4"></i>
       </button>
 
-      <div class="flex items-center gap-3 mb-5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-500 text-white flex items-center justify-center shadow-lg shadow-cyan-500/20">
-          <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+      <div class="flex items-center gap-2.5 mb-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-500 text-white flex items-center justify-center shadow-md shadow-cyan-500/20 flex-shrink-0">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
         </div>
         <div>
-          <h3 class="font-heading font-bold text-xl text-slate-900">Complete Your Order</h3>
-          <p class="text-xs text-slate-500">Instant Automated Activation via Email</p>
+          <h3 class="font-heading font-bold text-base text-slate-900 leading-tight">Complete Your Order</h3>
+          <p class="text-[11px] text-slate-400">Instant Automated Line Delivery via Email &amp; WhatsApp</p>
         </div>
       </div>
 
       <!-- Checkout Form -->
-      <form id="checkout-form" class="space-y-4">
+      <form id="checkout-form" class="space-y-2.5">
         
-        <!-- Location & Active Currency Auto-Detection Bar (Silent IP-based, no location prompts) -->
+        <!-- Location & Active Currency Auto-Detection Bar -->
         <?php
         $modalCurrencies = getCurrencies(true);
         $visitorCountry = detectVisitorCountry();
         $visitorCountryName = getCountryName($visitorCountry);
         ?>
-        <div class="p-3 rounded-2xl bg-cyan-50/80 border border-cyan-200 flex items-center justify-between gap-3 text-xs">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-7 h-7 rounded-lg bg-white border border-cyan-200 flex items-center justify-center text-cyan-600 shadow-sm flex-shrink-0">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-            </span>
-            <div class="truncate">
-              <span class="text-[9px] uppercase font-mono font-bold text-cyan-800/70 block leading-tight">Detected Country</span>
-              <span id="checkout-country-display" class="font-bold text-slate-800 text-xs">
-                <?= htmlspecialchars($visitorCountryName) ?> (<?= htmlspecialchars($visitorCountry) ?>)
-              </span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <label for="checkout-currency-select" class="text-[11px] font-semibold text-slate-600">Currency:</label>
-            <select id="checkout-currency-select" class="px-2.5 py-1.5 rounded-lg bg-white border border-cyan-300 text-cyan-900 font-bold text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-pointer">
-              <?php foreach ($modalCurrencies as $mcur): ?>
-                <option value="<?= htmlspecialchars($mcur['code']) ?>">
-                  <?= htmlspecialchars($mcur['code']) ?> (<?= htmlspecialchars($mcur['symbol']) ?>)
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-        </div>
         <input type="hidden" id="checkout-detected-country" name="country" value="<?= htmlspecialchars($visitorCountry) ?>">
 
-        <!-- Order Summary Card -->
-        <div class="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-500">Selected Plan:</span>
-            <span id="checkout-plan-name" class="font-bold text-slate-900">12 Months VIP Access</span>
+        <!-- Compact Plan, Price & Currency Strip -->
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="font-bold text-slate-900 text-xs truncate" id="checkout-plan-name">12 Months VIP Access</div>
+              <div class="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                <span id="checkout-connections-count" class="text-cyan-700 font-semibold">1 Connection</span>
+                <span>•</span>
+                <span id="checkout-country-display" class="font-mono text-slate-600">📍 <?= htmlspecialchars($visitorCountry) ?></span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <select id="checkout-currency-select" class="px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-900 font-bold text-[11px] shadow-sm focus:outline-none focus:border-cyan-400 cursor-pointer">
+                <?php foreach ($modalCurrencies as $mcur): ?>
+                  <option value="<?= htmlspecialchars($mcur['code']) ?>">
+                    <?= htmlspecialchars($mcur['code']) ?> (<?= htmlspecialchars($mcur['symbol']) ?>)
+                  </option>
+                <?php endforeach; ?>
+              </select>
+
+              <div class="text-right">
+                <span id="checkout-total-amount" class="font-heading font-black text-lg text-cyan-600 leading-none block">$74.99</span>
+                <span id="checkout-plan-price" class="hidden">$74.99</span>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-500">Connections:</span>
-            <span id="checkout-connections-count" class="font-semibold text-cyan-600">1 Connection</span>
-          </div>
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-500">Base Price:</span>
-            <span id="checkout-plan-price" class="font-bold text-slate-700">$74.99</span>
-          </div>
-          <div id="checkout-discount-row" class="hidden flex items-center justify-between text-xs text-emerald-500">
-            <span>Coupon Discount:</span>
+
+          <!-- Dynamic Coupon Discount Row -->
+          <div id="checkout-discount-row" class="hidden mt-1.5 pt-1.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-emerald-600 font-medium">
+            <span>Coupon Discount Applied:</span>
             <span id="checkout-discount-amount" class="font-bold">-$44.99</span>
           </div>
-          <div class="pt-2 border-t border-gray-200 flex items-center justify-between text-sm">
-            <span class="font-bold text-slate-900">Total Due:</span>
-            <span id="checkout-total-amount" class="font-heading font-black text-xl text-gradient-cyan">$74.99</span>
+        </div>
+
+        <!-- Inline Compact Promo Code Input -->
+        <div class="flex items-center gap-1.5">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="tag" class="w-3 h-3"></i>
+            </span>
+            <input 
+              id="coupon-code-input"
+              type="text" 
+              placeholder="Promo voucher (e.g. <?= FLASH_PROMO_CODE ?>)" 
+              class="w-full pl-7 pr-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-300 text-slate-900 text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-cyan-500 focus:bg-white placeholder:text-slate-400"
+            >
+          </div>
+          <button id="apply-coupon-btn" type="button" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs transition-all shadow-sm cursor-pointer flex-shrink-0">
+            Apply
+          </button>
+        </div>
+        <div id="coupon-feedback" class="text-[10px]"></div>
+
+        <!-- Full Name Field -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">Your Full Name <span class="text-rose-500">*</span></label>
+          <input required id="checkout-name" name="name" type="text" placeholder="e.g. John Doe" class="w-full px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-400">
+        </div>
+
+        <!-- 2-Column Grid: Email & WhatsApp Side by Side -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">Activation Email <span class="text-rose-500">*</span></label>
+            <input required id="checkout-email" name="email" type="email" placeholder="you@domain.com" class="w-full px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-400">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">WhatsApp Number <span class="text-rose-500">*</span></label>
+            <input required id="checkout-whatsapp" name="whatsapp" type="tel" placeholder="+1 555 019 2831" class="w-full px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-400">
           </div>
         </div>
 
-        <!-- Coupon Code Applicator -->
+        <!-- Payment Method Selection (Compact Pills) -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Have a Promo Voucher / Coupon?</label>
-          <div class="flex items-center gap-2">
-            <div class="relative flex-1">
-              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <i data-lucide="tag" class="w-3.5 h-3.5"></i>
-              </span>
-              <input 
-                id="coupon-code-input"
-                type="text" 
-                placeholder="Enter promo code (e.g. <?= FLASH_PROMO_CODE ?>)" 
-                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-cyan-500 focus:bg-white placeholder:text-slate-400 transition-all"
-              >
-            </div>
-            <button id="apply-coupon-btn" type="button" class="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs transition-all shadow-sm cursor-pointer flex-shrink-0">
-              Apply
-            </button>
-          </div>
-          <div id="coupon-feedback"></div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Your Full Name <span class="text-rose-500">*</span></label>
-          <input required id="checkout-name" name="name" type="text" placeholder="e.g. John Doe" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-400">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Activation Email Address <span class="text-rose-500">*</span></label>
-          <input required id="checkout-email" name="email" type="email" placeholder="you@domain.com" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-400">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Number (with Country Code) <span class="text-rose-500">*</span></label>
-          <input required id="checkout-whatsapp" name="whatsapp" type="tel" placeholder="+1 555 019 2831" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-slate-900 text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-400">
-          <p class="text-[10px] text-slate-400 mt-1">Required for instant line delivery and priority technical support.</p>
-        </div>
-
-        <!-- Payment Method Selection -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-2">Choose Payment Channel</label>
-          <div class="grid grid-cols-3 gap-2">
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Payment Method</label>
+          <div class="grid grid-cols-3 gap-1.5">
             <!-- Credit Card / Debit Card (Active) -->
-            <label class="p-3 rounded-xl bg-cyan-50/60 border-2 border-cyan-500 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm transition-all relative">
-              <input type="radio" name="payment-method" value="Credit Card" checked class="accent-cyan-600 mb-1">
-              <span class="text-xs font-bold text-slate-900">Credit / Debit Card</span>
-              <span class="text-[10px] text-cyan-700 font-semibold mt-0.5">Instant Automated</span>
+            <label class="p-2 rounded-xl bg-cyan-50/70 border-2 border-cyan-500 flex items-center justify-center gap-1.5 text-center cursor-pointer shadow-sm transition-all">
+              <input type="radio" name="payment-method" value="Credit Card" checked class="accent-cyan-600 w-3 h-3">
+              <span class="text-[11px] font-bold text-slate-900">Card</span>
             </label>
 
             <!-- PayPal (Coming Soon) -->
-            <div class="p-3 rounded-xl bg-gray-50/80 border border-gray-200 flex flex-col items-center justify-center text-center opacity-60 cursor-not-allowed relative">
-              <span class="text-[9px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 py-0.2 rounded absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap">Coming Soon</span>
-              <span class="text-xs font-bold text-slate-700 mt-1">PayPal</span>
-              <span class="text-[10px] text-slate-400">Buyer Protected</span>
+            <div class="p-2 rounded-xl bg-gray-50/80 border border-gray-200 flex items-center justify-center text-center opacity-60 cursor-not-allowed relative">
+              <span class="text-[8px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1 rounded absolute -top-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap">Soon</span>
+              <span class="text-[11px] font-bold text-slate-600">PayPal</span>
             </div>
 
             <!-- Crypto (Coming Soon) -->
-            <div class="p-3 rounded-xl bg-gray-50/80 border border-gray-200 flex flex-col items-center justify-center text-center opacity-60 cursor-not-allowed relative">
-              <span class="text-[9px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 py-0.2 rounded absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap">Coming Soon</span>
-              <span class="text-xs font-bold text-slate-700 mt-1">Crypto</span>
-              <span class="text-[10px] text-slate-400">10% OFF</span>
+            <div class="p-2 rounded-xl bg-gray-50/80 border border-gray-200 flex items-center justify-center text-center opacity-60 cursor-not-allowed relative">
+              <span class="text-[8px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1 rounded absolute -top-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap">Soon</span>
+              <span class="text-[11px] font-bold text-slate-600">Crypto</span>
             </div>
           </div>
         </div>
 
-        <button type="submit" class="btn-glow-cyan w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider mt-4">
+        <button type="submit" class="btn-glow-cyan w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-950 shadow-md cursor-pointer mt-1">
           Complete Secure Order
         </button>
 
-        <!-- Or WhatsApp Order Link -->
-        <button id="whatsapp-order-btn" type="button" class="w-full py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold flex items-center justify-center gap-2">
-          <i data-lucide="message-circle" class="w-4 h-4"></i>
-          <span>Or Order Directly via WhatsApp Support</span>
+        <!-- Secondary WhatsApp Order Link -->
+        <button id="whatsapp-order-btn" type="button" class="w-full py-1 text-center text-emerald-600 hover:text-emerald-700 transition-all text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+          <span>Or Order Directly via WhatsApp Support &rarr;</span>
         </button>
 
-        <p class="text-[10px] text-center text-slate-500">
-          🔒 256-bit SSL encrypted. 7-Day Money Back Guarantee included on all plans.
+        <p class="text-[9px] text-center text-slate-400">
+          🔒 256-bit SSL encrypted • 7-Day Money Back Guarantee included
         </p>
       </form>
 
