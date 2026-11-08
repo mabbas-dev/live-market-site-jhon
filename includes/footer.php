@@ -89,15 +89,8 @@
           <a href="/dmca" class="hover:text-cyan-600 transition-colors">DMCA</a>
           <span>•</span>
           <a href="/copyright" class="hover:text-cyan-600 transition-colors">Copyright</a>
-          <span>•</span>
-          <a href="admin/login.php" class="text-slate-600 hover:text-cyan-600 transition-colors flex items-center gap-1 font-mono">
-            <i data-lucide="lock" class="w-3 h-3"></i> Admin Portal
-          </a>
         </div>
         <p class="max-w-xl text-center md:text-right">
-          Disclaimer: All trademarks, logos, and brand names are property of their respective owners. <?= htmlspecialchars(SITE_NAME) ?> operates as an authenticated streaming subscription gateway.
-        </p>
-      </div>
           Disclaimer: All trademarks, logos, and brand names are property of their respective owners. <?= htmlspecialchars(SITE_NAME) ?> operates as an authenticated streaming subscription gateway.
         </p>
       </div>

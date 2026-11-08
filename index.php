@@ -151,30 +151,159 @@ include __DIR__ . '/includes/navbar.php';
       </div>
     </section>
 
-    <!-- 2. LIVE SPORTS & PPV TICKER MARQUEE -->
-    <section class="border-y border-slate-200 bg-slate-50 py-3.5 relative overflow-hidden" data-aos="fade-in" data-aos-duration="600">
-      <div class="max-w-7xl mx-auto px-4 flex items-center gap-4">
+    <!-- 2. SHOP & SUBSCRIPTION PACKAGES SHOWCASE -->
+    <section id="pricing" class="py-20 lg:py-28 relative bg-slate-50 border-y border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div class="flex-shrink-0 flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
-          <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
-          <span>UPCOMING TONIGHT</span>
-        </div>
+        <div class="text-center max-w-3xl mx-auto mb-12" data-aos="fade-up" data-aos-duration="700">
+          <span class="text-xs font-mono font-bold text-cyan-700 uppercase tracking-widest bg-cyan-50 px-3 py-1 rounded-full border border-cyan-200">
+            Subscription Plans
+          </span>
+          <h2 class="mt-4 font-heading font-black text-3xl sm:text-4xl text-slate-900">
+            Choose Your <span class="text-cyan-600"><?= SITE_NAME ?></span> Access
+          </h2>
+          <p class="mt-3 text-slate-600 text-sm sm:text-base">
+            Every subscription includes complete access to <?= TOTAL_CHANNELS ?> live channels, <?= TOTAL_VOD ?> VOD, Anti-Freeze™ 9.9, and automated instant activation.
+          </p>
 
-        <div class="ticker-container flex-1">
-          <div class="ticker-track text-xs font-medium text-slate-600 flex items-center gap-8">
-            <span class="inline-flex items-center gap-2">⚽ <strong class="text-slate-900">Premier League:</strong> Arsenal vs Chelsea <span class="text-cyan-700 font-mono font-bold">19:45 GMT</span></span>
-            <span class="text-slate-300">•</span>
-            <span class="inline-flex items-center gap-2">🥊 <strong class="text-slate-900">UFC 305 PPV:</strong> Adesanya vs Du Plessis <span class="text-cyan-700 font-mono font-bold">Main Card 02:00 GMT</span></span>
-            <span class="text-slate-300">•</span>
-            <span class="inline-flex items-center gap-2">🏎️ <strong class="text-slate-900">Formula 1:</strong> Monaco Grand Prix Qualifying <span class="text-cyan-700 font-mono font-bold">14:00 GMT</span></span>
-            <span class="text-slate-300">•</span>
-            <span class="inline-flex items-center gap-2">🏆 <strong class="text-slate-900">Champions League:</strong> Real Madrid vs Bayern <span class="text-cyan-700 font-mono font-bold">20:00 CET</span></span>
+          <!-- Simultaneous Connections Selector -->
+          <div class="mt-8 inline-flex items-center p-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm" data-aos="zoom-in" data-aos-delay="150">
+            <button id="conn-1-btn" class="px-5 py-2 rounded-xl text-xs font-bold transition-all bg-cyan-500 text-white shadow-md cursor-pointer">
+              1 Device Connection
+            </button>
+            <button id="conn-2-btn" class="px-5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer">
+              <span>2 Simultaneous Devices (Multi-Room)</span>
+              <span class="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">Save 55%</span>
+            </button>
           </div>
         </div>
 
-        <a href="/channels" class="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-cyan-600 hover:text-cyan-700 flex-shrink-0">
-          <span>All Fixtures</span> <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-        </a>
+        <!-- PRICING CARDS GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-<?= min(4, count($dbPlans)) ?> gap-6 items-stretch">
+          <?php foreach ($dbPlans as $idx => $p): 
+            $code = $p['plan_code'] ?: ('plan_' . $p['id']);
+            $isPopular = !empty($p['is_popular']);
+            $featuresList = array_filter(array_map('trim', explode("\n", $p['features'] ?? '')));
+            $months = (int)$p['months'];
+            $priceVal = (float)$p['price_usd'];
+            $perMonthStr = !empty($p['per_month_display']) ? $p['per_month_display'] : ('$' . number_format($priceVal / max(1, $months), 2) . '/mo');
+          ?>
+          <?php if ($isPopular): ?>
+          <!-- Plan (POPULAR) -->
+          <div class="relative bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between border-2 border-cyan-500 shadow-xl shadow-cyan-500/15 tilt-card !overflow-visible scale-[1.02] z-20 mt-3 sm:mt-0" data-aos="fade-up" data-aos-delay="<?= 100 * ($idx + 1) ?>">
+            
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 text-white font-mono font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-cyan-500/35 whitespace-nowrap z-30 border border-white/40 flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-300"></i>
+              <span>★ <?= !empty($p['savings_badge']) ? htmlspecialchars($p['savings_badge']) : 'Most Popular • Best Value' ?></span>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono font-bold text-cyan-700 uppercase tracking-wider"><?= $months >= 12 ? 'Annual VIP' : 'Featured' ?></span>
+                <span class="text-[11px] font-bold text-amber-800 px-2 py-0.5 rounded bg-amber-50 border border-amber-200">Best Value</span>
+              </div>
+
+              <h3 class="font-heading font-bold text-2xl text-slate-900 mt-3"><?= htmlspecialchars($p['name']) ?></h3>
+              <p class="text-xs text-slate-500 mt-1">Complete peace of mind with ultra stability</p>
+
+              <div class="mt-6 mb-6">
+                <div class="flex items-baseline gap-1">
+                  <span id="price-<?= htmlspecialchars($code) ?>" class="font-heading font-black text-4xl text-cyan-600">$<?= number_format($priceVal, 2) ?></span>
+                  <span class="text-xs text-slate-500 font-medium">/ <?= $months ?> month<?= $months > 1 ? 's' : '' ?></span>
+                </div>
+                <p id="per-month-<?= htmlspecialchars($code) ?>" class="text-xs text-emerald-700 font-bold mt-1"><?= htmlspecialchars($perMonthStr) ?></p>
+              </div>
+
+              <ul class="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-6">
+                <?php foreach ($featuresList as $feat): ?>
+                <li class="flex items-center gap-2.5">
+                  <i data-lucide="check" class="w-4 h-4 text-cyan-600 flex-shrink-0"></i>
+                  <span><?= htmlspecialchars($feat) ?></span>
+                </li>
+                <?php endforeach; ?>
+              </ul>
+            </div>
+
+            <div class="mt-8">
+              <button data-select-plan="<?= htmlspecialchars($code) ?>" class="btn-glow-cyan shimmer-active w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/25">
+                <span>Select <?= htmlspecialchars($p['name']) ?></span>
+                <i data-lucide="zap" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <?php else: ?>
+          <!-- Standard Plan -->
+          <div class="bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between border border-slate-200 shadow-sm hover:shadow-xl hover:border-cyan-300 transition-all tilt-card spotlight-card" data-aos="fade-up" data-aos-delay="<?= 100 * ($idx + 1) ?>">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">
+                  <?= $months <= 1 ? 'Starter' : ($months <= 3 ? 'Quarterly' : ($months <= 6 ? 'Semi-Annual' : ($months >= 24 ? 'Ultimate' : 'Standard'))) ?>
+                </span>
+                <?php if (!empty($p['savings_badge'])): ?>
+                <span class="text-[11px] font-bold text-emerald-700 px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200"><?= htmlspecialchars($p['savings_badge']) ?></span>
+                <?php else: ?>
+                <span class="text-[11px] font-semibold text-slate-600 px-2.5 py-0.5 rounded bg-slate-100"><?= $months ?> Mo</span>
+                <?php endif; ?>
+              </div>
+
+              <h3 class="font-heading font-bold text-2xl text-slate-900 mt-3"><?= htmlspecialchars($p['name']) ?></h3>
+              <p class="text-xs text-slate-500 mt-1">Instant setup with automated 60s activation</p>
+
+              <div class="mt-6 mb-6">
+                <div class="flex items-baseline gap-1">
+                  <span id="price-<?= htmlspecialchars($code) ?>" class="font-heading font-black text-4xl text-slate-900">$<?= number_format($priceVal, 2) ?></span>
+                  <span class="text-xs text-slate-500 font-medium">/ <?= $months ?> month<?= $months > 1 ? 's' : '' ?></span>
+                </div>
+                <p id="per-month-<?= htmlspecialchars($code) ?>" class="text-xs text-cyan-700 font-semibold mt-1"><?= htmlspecialchars($perMonthStr) ?></p>
+              </div>
+
+              <ul class="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-6">
+                <?php foreach ($featuresList as $feat): ?>
+                <li class="flex items-center gap-2.5">
+                  <i data-lucide="check" class="w-4 h-4 text-cyan-600 flex-shrink-0"></i>
+                  <span><?= htmlspecialchars($feat) ?></span>
+                </li>
+                <?php endforeach; ?>
+              </ul>
+            </div>
+
+            <div class="mt-8">
+              <button data-select-plan="<?= htmlspecialchars($code) ?>" class="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition-all cursor-pointer">
+                Select <?= htmlspecialchars($p['name']) ?>
+              </button>
+            </div>
+          </div>
+          <?php endif; ?>
+          <?php endforeach; ?>
+        </div>
+
+        <!-- Shop page link banner -->
+        <div class="mt-10 text-center">
+          <a href="/shop" class="inline-flex items-center gap-2 text-sm font-bold text-cyan-600 hover:text-cyan-700 group">
+            <span>View All Packages, Details & Multi-Room Options on our dedicated Shop Page</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </a>
+        </div>
+
+        <!-- Payment methods & Trust badges -->
+        <div class="mt-10 bg-white p-6 rounded-2xl max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-6 border border-slate-200 shadow-sm" data-aos="fade-up" data-aos-delay="200">
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i>
+            <span>256-Bit SSL Encrypted & Secure Checkout</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
+            <span class="px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-700 shadow-sm">Visa / Mastercard</span>
+            <span class="px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-700 shadow-sm">PayPal</span>
+            <span class="px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-700 shadow-sm">Apple Pay / G Pay</span>
+            <span class="px-2.5 py-1 rounded bg-cyan-50 border border-cyan-200 text-cyan-700 font-semibold shadow-sm">Bitcoin / USDT (10% OFF)</span>
+          </div>
+
+          <div class="text-xs text-slate-500">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 inline mr-1 text-cyan-600"></i>
+            <span>7-Day No Risk Money Back Guarantee</span>
+          </div>
+        </div>
 
       </div>
     </section>
@@ -360,164 +489,7 @@ include __DIR__ . '/includes/navbar.php';
       </div>
     </section>
 
-    <!-- 5. SHOP & SUBSCRIPTION PACKAGES SHOWCASE -->
-    <section id="pricing" class="py-20 lg:py-28 relative bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="text-center max-w-3xl mx-auto mb-12" data-aos="fade-up" data-aos-duration="700">
-          <span class="text-xs font-mono font-bold text-cyan-700 uppercase tracking-widest bg-cyan-50 px-3 py-1 rounded-full border border-cyan-200">
-            Subscription Plans
-          </span>
-          <h2 class="mt-4 font-heading font-black text-3xl sm:text-4xl text-slate-900">
-            Choose Your <span class="text-cyan-600"><?= SITE_NAME ?></span> Access
-          </h2>
-          <p class="mt-3 text-slate-600 text-sm sm:text-base">
-            Every subscription includes complete access to <?= TOTAL_CHANNELS ?> live channels, <?= TOTAL_VOD ?> VOD, Anti-Freeze™ 9.9, and automated instant activation.
-          </p>
-
-          <!-- Simultaneous Connections Selector -->
-          <div class="mt-8 inline-flex items-center p-1.5 rounded-2xl bg-slate-100 border border-slate-200 shadow-inner" data-aos="zoom-in" data-aos-delay="150">
-            <button id="conn-1-btn" class="px-5 py-2 rounded-xl text-xs font-bold transition-all bg-cyan-500 text-white shadow-md cursor-pointer">
-              1 Device Connection
-            </button>
-            <button id="conn-2-btn" class="px-5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer">
-              <span>2 Simultaneous Devices (Multi-Room)</span>
-              <span class="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">Save 55%</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- PRICING CARDS GRID -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-<?= min(4, count($dbPlans)) ?> gap-6 items-stretch">
-          <?php foreach ($dbPlans as $idx => $p): 
-            $code = $p['plan_code'] ?: ('plan_' . $p['id']);
-            $isPopular = !empty($p['is_popular']);
-            $featuresList = array_filter(array_map('trim', explode("\n", $p['features'] ?? '')));
-            $months = (int)$p['months'];
-            $priceVal = (float)$p['price_usd'];
-            $perMonthStr = !empty($p['per_month_display']) ? $p['per_month_display'] : ('$' . number_format($priceVal / max(1, $months), 2) . '/mo');
-          ?>
-          <?php if ($isPopular): ?>
-          <!-- Plan (POPULAR) -->
-          <div class="relative bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between border-2 border-cyan-500 shadow-xl shadow-cyan-500/15 tilt-card !overflow-visible scale-[1.02] z-20 mt-3 sm:mt-0" data-aos="fade-up" data-aos-delay="<?= 100 * ($idx + 1) ?>">
-            
-            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 text-white font-mono font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-cyan-500/35 whitespace-nowrap z-30 border border-white/40 flex items-center gap-1.5">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-300"></i>
-              <span>★ <?= !empty($p['savings_badge']) ? htmlspecialchars($p['savings_badge']) : 'Most Popular • Best Value' ?></span>
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono font-bold text-cyan-700 uppercase tracking-wider"><?= $months >= 12 ? 'Annual VIP' : 'Featured' ?></span>
-                <span class="text-[11px] font-bold text-amber-800 px-2 py-0.5 rounded bg-amber-50 border border-amber-200">Best Value</span>
-              </div>
-
-              <h3 class="font-heading font-bold text-2xl text-slate-900 mt-3"><?= htmlspecialchars($p['name']) ?></h3>
-              <p class="text-xs text-slate-500 mt-1">Complete peace of mind with ultra stability</p>
-
-              <div class="mt-6 mb-6">
-                <div class="flex items-baseline gap-1">
-                  <span id="price-<?= htmlspecialchars($code) ?>" class="font-heading font-black text-4xl text-cyan-600">$<?= number_format($priceVal, 2) ?></span>
-                  <span class="text-xs text-slate-500 font-medium">/ <?= $months ?> month<?= $months > 1 ? 's' : '' ?></span>
-                </div>
-                <p id="per-month-<?= htmlspecialchars($code) ?>" class="text-xs text-emerald-700 font-bold mt-1"><?= htmlspecialchars($perMonthStr) ?></p>
-              </div>
-
-              <ul class="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-6">
-                <?php foreach ($featuresList as $feat): ?>
-                <li class="flex items-center gap-2.5">
-                  <i data-lucide="check" class="w-4 h-4 text-cyan-600 flex-shrink-0"></i>
-                  <span><?= htmlspecialchars($feat) ?></span>
-                </li>
-                <?php endforeach; ?>
-              </ul>
-            </div>
-
-            <div class="mt-8">
-              <button data-select-plan="<?= htmlspecialchars($code) ?>" class="btn-glow-cyan shimmer-active w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/25">
-                <span>Select <?= htmlspecialchars($p['name']) ?></span>
-                <i data-lucide="zap" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-          <?php else: ?>
-          <!-- Standard Plan -->
-          <div class="bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between border border-slate-200 shadow-sm hover:shadow-xl hover:border-cyan-300 transition-all tilt-card spotlight-card" data-aos="fade-up" data-aos-delay="<?= 100 * ($idx + 1) ?>">
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">
-                  <?= $months <= 1 ? 'Starter' : ($months <= 3 ? 'Quarterly' : ($months <= 6 ? 'Semi-Annual' : ($months >= 24 ? 'Ultimate' : 'Standard'))) ?>
-                </span>
-                <?php if (!empty($p['savings_badge'])): ?>
-                <span class="text-[11px] font-bold text-emerald-700 px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200"><?= htmlspecialchars($p['savings_badge']) ?></span>
-                <?php else: ?>
-                <span class="text-[11px] font-semibold text-slate-600 px-2.5 py-0.5 rounded bg-slate-100"><?= $months ?> Mo</span>
-                <?php endif; ?>
-              </div>
-
-              <h3 class="font-heading font-bold text-2xl text-slate-900 mt-3"><?= htmlspecialchars($p['name']) ?></h3>
-              <p class="text-xs text-slate-500 mt-1">Instant setup with automated 60s activation</p>
-
-              <div class="mt-6 mb-6">
-                <div class="flex items-baseline gap-1">
-                  <span id="price-<?= htmlspecialchars($code) ?>" class="font-heading font-black text-4xl text-slate-900">$<?= number_format($priceVal, 2) ?></span>
-                  <span class="text-xs text-slate-500 font-medium">/ <?= $months ?> month<?= $months > 1 ? 's' : '' ?></span>
-                </div>
-                <p id="per-month-<?= htmlspecialchars($code) ?>" class="text-xs text-cyan-700 font-semibold mt-1"><?= htmlspecialchars($perMonthStr) ?></p>
-              </div>
-
-              <ul class="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-6">
-                <?php foreach ($featuresList as $feat): ?>
-                <li class="flex items-center gap-2.5">
-                  <i data-lucide="check" class="w-4 h-4 text-cyan-600 flex-shrink-0"></i>
-                  <span><?= htmlspecialchars($feat) ?></span>
-                </li>
-                <?php endforeach; ?>
-              </ul>
-            </div>
-
-            <div class="mt-8">
-              <button data-select-plan="<?= htmlspecialchars($code) ?>" class="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition-all cursor-pointer">
-                Select <?= htmlspecialchars($p['name']) ?>
-              </button>
-            </div>
-          </div>
-          <?php endif; ?>
-          <?php endforeach; ?>
-        </div>
-
-        <!-- Shop page link banner -->
-        <div class="mt-10 text-center">
-          <a href="/shop" class="inline-flex items-center gap-2 text-sm font-bold text-cyan-600 hover:text-cyan-700 group">
-            <span>View Full Feature Comparison Table & Multi-Room Options on our dedicated Shop Page</span>
-            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-          </a>
-        </div>
-
-        <!-- Payment methods & Trust badges -->
-        <div class="mt-10 bg-slate-50 p-6 rounded-2xl max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-6 border border-slate-200 shadow-sm" data-aos="fade-up" data-aos-delay="200">
-          <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-            <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i>
-            <span>256-Bit SSL Encrypted & Secure Checkout</span>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
-            <span class="px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-700 shadow-sm">Visa / Mastercard</span>
-            <span class="px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-700 shadow-sm">PayPal</span>
-            <span class="px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-700 shadow-sm">Apple Pay / G Pay</span>
-            <span class="px-2.5 py-1 rounded bg-cyan-50 border border-cyan-200 text-cyan-700 font-semibold shadow-sm">Bitcoin / USDT (10% OFF)</span>
-          </div>
-
-          <div class="text-xs text-slate-500">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 inline mr-1 text-cyan-600"></i>
-            <span>7-Day No Risk Money Back Guarantee</span>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- 6. DEVICE COMPATIBILITY SPOTLIGHT -->
+    <!-- 5. DEVICE COMPATIBILITY SPOTLIGHT -->
     <section class="py-16 bg-slate-50 border-y border-slate-200 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -595,7 +567,7 @@ include __DIR__ . '/includes/navbar.php';
       </div>
     </section>
 
-    <!-- 7. CUSTOMER REVIEWS & SOCIAL PROOF -->
+    <!-- 6. CUSTOMER REVIEWS & SOCIAL PROOF -->
     <section class="py-20 relative bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -691,7 +663,7 @@ include __DIR__ . '/includes/navbar.php';
       </div>
     </section>
 
-    <!-- 8. LATEST ARTICLES FROM BLOG -->
+    <!-- 7. LATEST ARTICLES FROM BLOG -->
     <section class="py-20 bg-slate-50 border-y border-slate-200 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -775,7 +747,7 @@ include __DIR__ . '/includes/navbar.php';
       </div>
     </section>
 
-    <!-- 9. CONCISE FAQS -->
+    <!-- 8. CONCISE FAQS -->
     <section id="faq" class="py-20 bg-white border-b border-slate-200 relative">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -848,7 +820,7 @@ include __DIR__ . '/includes/navbar.php';
       </div>
     </section>
 
-    <!-- 10. BOTTOM CALL TO ACTION -->
+    <!-- 9. BOTTOM CALL TO ACTION -->
     <section class="py-20 relative overflow-hidden bg-gradient-to-b from-white via-cyan-50/50 to-white" data-aos="zoom-in" data-aos-duration="800">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         
