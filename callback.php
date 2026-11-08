@@ -9,6 +9,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/config/payment_bridge.php';
+require_once __DIR__ . '/config/notifications.php';
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -71,6 +72,11 @@ try {
     $stmt->execute([$dbStatus, $refId, $orderId]);
 
     error_log("[CALLBACK SUCCESS] Order #{$orderId} status updated to '{$dbStatus}' (TX: {$refId})");
+
+    // Trigger paid order notifications (Pushover alert with cashregister sound + SMTP emails)
+    if ($dbStatus === 'Paid') {
+        notifyOrderPaid($orderId, $refId);
+    }
 
     http_response_code(200);
     echo json_encode([

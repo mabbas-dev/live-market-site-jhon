@@ -20,10 +20,14 @@ $recentOrders = [];
 
 try {
     // Orders stats
-    $stmt = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as revenue FROM `orders`");
-    $orderData = $stmt->fetch();
-    $totalOrders = (int)$orderData['count'];
-    $totalRevenue = (float)$orderData['revenue'];
+    $stmt = $pdo->query("SELECT COUNT(*) as count FROM `orders`");
+    $totalOrders = (int)$stmt->fetchColumn();
+
+    $stmt = $pdo->query("SELECT COUNT(*) FROM `orders` WHERE `status` = 'Paid'");
+    $paidOrders = (int)$stmt->fetchColumn();
+
+    $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM `orders` WHERE `status` = 'Paid'");
+    $totalRevenue = (float)$stmt->fetchColumn();
 
     // Trial stats
     $stmt = $pdo->query("SELECT COUNT(*) FROM `trial_leads`");
@@ -79,15 +83,15 @@ try {
   <!-- Metric 1: Total Revenue -->
   <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
     <div class="flex items-center justify-between mb-3">
-      <span class="text-xs font-medium text-slate-400">Total Recorded Revenue</span>
+      <span class="text-xs font-medium text-slate-400">Confirmed Paid Revenue</span>
       <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
-        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+        <i data-lucide="badge-dollar-sign" class="w-5 h-5"></i>
       </div>
     </div>
     <div class="text-2xl font-black text-white font-mono">$<?= number_format($totalRevenue, 2) ?></div>
     <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
-      <span class="text-emerald-400 font-semibold"><?= $totalOrders ?> Total Orders</span>
-      <span>from online checkout</span>
+      <span class="text-emerald-400 font-semibold"><?= $paidOrders ?> Paid</span>
+      <span>• <?= $totalOrders ?> Total Orders Placed</span>
     </div>
   </div>
 

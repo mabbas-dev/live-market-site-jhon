@@ -153,6 +153,11 @@ try {
         <?php endif; ?>
       </a>
 
+      <a href="notifications.php" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all <?= ($curAdminPage === 'notifications') ? 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' ?>">
+        <i data-lucide="bell" class="w-4 h-4 text-emerald-400"></i>
+        <span>SMTP & Pushover</span>
+      </a>
+
       <div class="px-3 pt-4 pb-1 text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">External</div>
 
       <a href="../index.php" target="_blank" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">

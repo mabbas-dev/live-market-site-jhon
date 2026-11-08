@@ -7,29 +7,55 @@ $adminTitle = 'Customer Orders';
 $adminPage = 'orders';
 
 require_once __DIR__ . '/header.php';
+require_once __DIR__ . '/../config/notifications.php';
 
 $successMsg = '';
 $errorMsg = '';
 
-// Handle Status Updates or Deletion
+// Handle Status Updates, Email Dispatch, or Deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     $orderId = (int)$_POST['id'];
 
-    if ($action === 'set_status') {
-        $newStatus = $_POST['status'] ?? 'New';
+    if ($action === 'mark_paid') {
         try {
-            $stmt = $pdo->prepare("UPDATE `orders` SET `status` = ? WHERE `id` = ?");
-            $stmt->execute([$newStatus, $orderId]);
-            $successMsg = "Order #{$orderId} status set to '{$newStatus}'.";
+            $stmt = $pdo->prepare("UPDATE `orders` SET `status` = 'Paid' WHERE `id` = ?");
+            $stmt->execute([$orderId]);
+
+            // Dispatch instant Pushover notification and email credentials
+            notifyOrderPaid($orderId);
+
+            $successMsg = "Order #{$orderId} has been confirmed as PAID! Customer activation email and Pushover mobile alert dispatched.";
         } catch (Exception $e) {
             $errorMsg = "Error updating order: " . $e->getMessage();
+        }
+    } else if ($action === 'send_email') {
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM `orders` WHERE `id` = ? LIMIT 1");
+            $stmt->execute([$orderId]);
+            $order = $stmt->fetch();
+
+            if ($order && !empty($order['email'])) {
+                $subject = "Streaming Activation Credentials — Order #LTV-{$order['id']}";
+                $html = buildCustomerActivationEmail($order);
+                $res = sendSMTPEmail($order['email'], $order['customer_name'] ?: 'Customer', $subject, $html);
+
+                if ($res['success']) {
+                    $successMsg = "Full activation credentials email sent successfully to '{$order['email']}' via SMTP!";
+                } else {
+                    $errorMsg = "Email Delivery Error: " . ($res['error'] ?? 'SMTP server rejected message. Check SMTP settings.');
+                }
+            } else {
+                $errorMsg = "Customer has no valid email address on file.";
+            }
+        } catch (Exception $e) {
+            $errorMsg = "Error preparing email: " . $e->getMessage();
         }
     } else if ($action === 'delete') {
         try {
             $stmt = $pdo->prepare("DELETE FROM `orders` WHERE `id` = ?");
             $stmt->execute([$orderId]);
-            $successMsg = "Order #{$orderId} deleted.";
+            $successMsg = "Order #{$orderId} deleted successfully.";
         } catch (Exception $e) {
             $errorMsg = "Error deleting order: " . $e->getMessage();
         }
@@ -70,7 +96,8 @@ try {
     $orders = $stmt->fetchAll();
 
     $totalOrderCount = (int)$pdo->query("SELECT COUNT(*) FROM `orders`")->fetchColumn();
-    $totalRevenueSum = (float)$pdo->query("SELECT COALESCE(SUM(amount), 0) FROM `orders`")->fetchColumn();
+    // Confirmed Paid revenue only
+    $totalRevenueSum = (float)$pdo->query("SELECT COALESCE(SUM(amount), 0) FROM `orders` WHERE `status` = 'Paid'")->fetchColumn();
 
     $counts = [
         'all' => $totalOrderCount,
@@ -86,16 +113,55 @@ try {
 
 <div class="max-w-6xl">
   
-  <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-black text-white">Customer Orders Management</h1>
-      <p class="text-xs text-slate-400 mt-1">Review subscription checkout transactions, verify payment channels, and manage customer service access.</p>
+      <p class="text-xs text-slate-400 mt-1">Review subscription checkout transactions, deliver credentials via WhatsApp & SMTP email, and verify payment channels.</p>
     </div>
-    <div class="flex items-center gap-3">
-      <div class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono">
-        <span class="text-slate-400">Total Revenue:</span>
-        <strong class="text-emerald-400 ml-1 font-bold text-sm">$<?= number_format($totalRevenueSum, 2) ?></strong>
+    <div class="flex items-center gap-2">
+      <a href="notifications.php" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500 text-xs font-semibold text-cyan-400 flex items-center gap-1.5 transition-colors">
+        <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+        <span>Pushover & SMTP Settings</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 HIGH-CLARITY METRIC CARDS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="glass-card rounded-2xl p-4 border border-slate-800">
+      <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+        <span>Total Orders Placed</span>
+        <i data-lucide="shopping-bag" class="w-4 h-4 text-cyan-400"></i>
       </div>
+      <div class="text-2xl font-black text-white font-mono"><?= $counts['all'] ?></div>
+      <div class="text-[10px] text-slate-500 mt-1">All checkout submissions</div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 border border-emerald-500/30 bg-emerald-500/5">
+      <div class="flex items-center justify-between text-emerald-400 text-xs mb-1">
+        <span class="font-bold">Paid Customers</span>
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+      </div>
+      <div class="text-2xl font-black text-emerald-400 font-mono"><?= $counts['paid'] ?></div>
+      <div class="text-[10px] text-emerald-300/60 mt-1">Confirmed payments</div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 border border-slate-800">
+      <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+        <span>Confirmed Revenue</span>
+        <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-emerald-400"></i>
+      </div>
+      <div class="text-2xl font-black text-white font-mono">$<?= number_format($totalRevenueSum, 2) ?></div>
+      <div class="text-[10px] text-slate-500 mt-1">Strictly from paid orders</div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 border border-slate-800">
+      <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+        <span>Pending Payment</span>
+        <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
+      </div>
+      <div class="text-2xl font-black text-amber-400 font-mono"><?= $counts['new'] ?></div>
+      <div class="text-[10px] text-slate-500 mt-1">Awaiting customer payment</div>
     </div>
   </div>
 
@@ -229,38 +295,67 @@ try {
                   <?= date('M j, Y • H:i', strtotime($o['created_at'])) ?>
                 </td>
                 <td class="p-4 text-right">
-                  <div class="flex items-center justify-end gap-2">
+                  <div class="flex items-center justify-end gap-1.5">
                     
-                    <?php if (!empty($o['whatsapp'])): 
+                    <?php 
+                    // Generate Credentials for Delivery
+                    $custName = $o['customer_name'] ?: 'Customer';
+                    $username = 'ltv_' . strtolower(substr(md5($o['id'] . 'usr_salt'), 0, 7));
+                    $password = substr(md5($o['id'] . 'pwd_salt'), 0, 8);
+                    $serverHost = 'stream.' . getSetting('site_domain', 'livetvmarket.com') . ':8080';
+                    $m3u = "http://{$serverHost}/get.php?username={$username}&password={$password}&type=m3u_plus";
+                    $setupUrl = rtrim(getSetting('site_url', 'https://livetvmarket.com'), '/') . '/setup';
+
+                    if (!empty($o['whatsapp'])): 
                       $cleanPhone = preg_replace('/[^0-9]/', '', $o['whatsapp']);
-                      $waMsg = urlencode("Hello " . ($o['customer_name'] ?: 'Customer') . ", thank you for your order #" . $o['id'] . " (" . $o['plan_name'] . ") at LIVETVMARKET! Here are your activation credentials and setup details.");
+                      $waMsg = "🔥 *LIVETVMARKET Subscription Delivery*\n"
+                             . "━━━━━━━━━━━━━━━━━━━━━━━\n"
+                             . "👤 *Customer:* {$custName}\n"
+                             . "📦 *Plan:* {$o['plan_name']} ({$o['connections']} Device)\n"
+                             . "💳 *Status:* {$o['status']}\n"
+                             . "━━━━━━━━━━━━━━━━━━━━━━━\n"
+                             . "⚡ *YOUR STREAMING CREDENTIALS:*\n"
+                             . "🌐 *Portal URL:* http://{$serverHost}\n"
+                             . "🔑 *Username:* `{$username}`\n"
+                             . "🔒 *Password:* `{$password}`\n"
+                             . "🔗 *Direct M3U URL:* {$m3u}\n"
+                             . "━━━━━━━━━━━━━━━━━━━━━━━\n"
+                             . "📖 *Installation Guide:* {$setupUrl}\n"
+                             . "💬 Reply here anytime if you need setup assistance!";
                     ?>
-                      <a href="https://wa.me/<?= $cleanPhone ?>?text=<?= $waMsg ?>" target="_blank" title="Contact customer on WhatsApp"
+                      <a href="https://wa.me/<?= $cleanPhone ?>?text=<?= urlencode($waMsg) ?>" target="_blank" title="Deliver full credentials via WhatsApp"
                         class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-colors">
                         <i data-lucide="message-circle" class="w-4 h-4"></i>
                       </a>
                     <?php endif; ?>
-                    
-                    <form action="orders.php" method="POST" class="inline">
-                      <input type="hidden" name="action" value="set_status">
-                      <input type="hidden" name="id" value="<?= $o['id'] ?>">
-                      <?php if ($o['status'] !== 'Active'): ?>
-                        <input type="hidden" name="status" value="Active">
-                        <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 hover:text-slate-950 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] transition-colors" title="Activate account">
-                          Activate
-                        </button>
-                      <?php else: ?>
-                        <input type="hidden" name="status" value="Cancelled">
-                        <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] transition-colors" title="Mark as cancelled">
-                          Cancel
-                        </button>
-                      <?php endif; ?>
-                    </form>
 
+                    <!-- Send Credentials via SMTP Email -->
+                    <?php if (!empty($o['email'])): ?>
+                      <form action="orders.php" method="POST" class="inline" onsubmit="return confirm('Send full streaming activation email to <?= htmlspecialchars($o['email']) ?> via SMTP?');">
+                        <input type="hidden" name="action" value="send_email">
+                        <input type="hidden" name="id" value="<?= $o['id'] ?>">
+                        <button type="submit" class="p-2 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500 hover:text-slate-950 transition-colors" title="Send / Resend Activation Email via SMTP">
+                          <i data-lucide="mail" class="w-4 h-4"></i>
+                        </button>
+                      </form>
+                    <?php endif; ?>
+
+                    <!-- Mark as Paid Action (for pending / manual orders) -->
+                    <?php if ($o['status'] !== 'Paid'): ?>
+                      <form action="orders.php" method="POST" class="inline" onsubmit="return confirm('Confirm order #<?= $o['id'] ?> as Paid? This will trigger credentials delivery and Pushover alert.');">
+                        <input type="hidden" name="action" value="mark_paid">
+                        <input type="hidden" name="id" value="<?= $o['id'] ?>">
+                        <button type="submit" class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-colors" title="Confirm Payment (Mark as Paid)">
+                          <i data-lucide="check" class="w-4 h-4"></i>
+                        </button>
+                      </form>
+                    <?php endif; ?>
+
+                    <!-- Delete Order -->
                     <form action="orders.php" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete order #<?= $o['id'] ?>?');">
                       <input type="hidden" name="action" value="delete">
                       <input type="hidden" name="id" value="<?= $o['id'] ?>">
-                      <button type="submit" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Delete order">
+                      <button type="submit" class="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Delete order">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                       </button>
                     </form>

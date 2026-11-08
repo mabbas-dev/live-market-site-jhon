@@ -8,6 +8,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/coupons.php';
 require_once __DIR__ . '/../config/payment_bridge.php';
+require_once __DIR__ . '/../config/notifications.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
@@ -45,6 +46,9 @@ try {
     if (!empty($couponUsed)) {
         incrementCouponUsage($couponUsed);
     }
+
+    // Trigger instant notifications (Pushover alert to admin devices like pixel8)
+    notifyNewOrder((int)$orderId);
 
     $redirectUrl = null;
     // If Credit / Debit Card, create secure signed bridge checkout URL

@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/payment_bridge.php';
+require_once __DIR__ . '/config/notifications.php';
 
 $pageTitle = 'Payment Successful - Order Confirmed | ' . SITE_NAME;
 $pageDesc = 'Your LIVETVMARKET IPTV subscription order has been confirmed and paid. Instant streaming credentials dispatched.';
@@ -32,6 +33,9 @@ if ($pdo && $orderId > 0) {
                 $upd->execute([$orderId]);
             }
             $order['status'] = 'Paid';
+
+            // Send instant Pushover & email credentials
+            notifyOrderPaid($orderId, $txid);
         }
     } catch (Exception $e) {
         error_log("Success page query error: " . $e->getMessage());
