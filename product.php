@@ -499,27 +499,30 @@ include __DIR__ . '/includes/navbar.php';
           </div>
         </div>
 
-        <!-- Payment Method Choice -->
+        <!-- Payment Method Selection -->
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1.5">Payment Method</label>
           <div class="grid grid-cols-3 gap-2">
-            <label class="p-2.5 rounded-xl border-2 border-cyan-500 bg-cyan-50/40 text-center cursor-pointer transition-all flex flex-col items-center justify-center pay-option" data-channel="Credit Card">
+            <!-- Credit Card / Debit Card (Active) -->
+            <label class="p-2.5 rounded-xl border-2 border-cyan-500 bg-cyan-50/60 text-center cursor-pointer transition-all flex flex-col items-center justify-center shadow-sm">
               <input type="radio" name="payment_channel" value="Credit Card" checked class="hidden">
               <span class="text-xs font-bold text-slate-900">Card</span>
-              <span class="text-[10px] text-slate-500">Instant</span>
+              <span class="text-[10px] text-cyan-700 font-semibold">Instant</span>
             </label>
 
-            <label class="p-2.5 rounded-xl border border-slate-200 bg-white text-center cursor-pointer transition-all flex flex-col items-center justify-center pay-option" data-channel="PayPal">
-              <input type="radio" name="payment_channel" value="PayPal" class="hidden">
-              <span class="text-xs font-bold text-slate-900">PayPal</span>
-              <span class="text-[10px] text-slate-500">Fast</span>
-            </label>
+            <!-- PayPal (Coming Soon) -->
+            <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center opacity-60 cursor-not-allowed relative flex flex-col items-center justify-center">
+              <span class="text-[8px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 rounded absolute -top-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap">Soon</span>
+              <span class="text-xs font-bold text-slate-600">PayPal</span>
+              <span class="text-[10px] text-slate-400">Fast</span>
+            </div>
 
-            <label class="p-2.5 rounded-xl border border-slate-200 bg-white text-center cursor-pointer transition-all flex flex-col items-center justify-center pay-option" data-channel="Crypto">
-              <input type="radio" name="payment_channel" value="Crypto" class="hidden">
-              <span class="text-xs font-bold text-slate-900">Crypto</span>
-              <span class="text-[10px] text-cyan-600 font-bold">-10% OFF</span>
-            </label>
+            <!-- Crypto (Coming Soon) -->
+            <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center opacity-60 cursor-not-allowed relative flex flex-col items-center justify-center">
+              <span class="text-[8px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 rounded absolute -top-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap">Soon</span>
+              <span class="text-xs font-bold text-slate-600">Crypto</span>
+              <span class="text-[10px] text-slate-400">Fast</span>
+            </div>
           </div>
         </div>
 
@@ -628,20 +631,6 @@ include __DIR__ . '/includes/navbar.php';
       }
       modal.addEventListener('click', function(e) {
         if (e.target === modal) modal.classList.add('hidden');
-      });
-
-      // Payment option selector
-      const payOptions = document.querySelectorAll('.pay-option');
-      payOptions.forEach(opt => {
-        opt.addEventListener('click', function() {
-          payOptions.forEach(o => {
-            o.classList.remove('border-cyan-500', 'bg-cyan-50/40');
-            o.classList.add('border-slate-200', 'bg-white');
-          });
-          this.classList.remove('border-slate-200', 'bg-white');
-          this.classList.add('border-cyan-500', 'bg-cyan-50/40');
-          this.querySelector('input[type="radio"]').checked = true;
-        });
       });
 
       // Form submission

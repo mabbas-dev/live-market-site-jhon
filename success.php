@@ -9,7 +9,7 @@ require_once __DIR__ . '/config/payment_bridge.php';
 require_once __DIR__ . '/config/notifications.php';
 
 $pageTitle = 'Payment Successful - Order Confirmed | ' . SITE_NAME;
-$pageDesc = 'Your LIVETVMARKET IPTV subscription order has been confirmed and paid. Instant streaming credentials dispatched.';
+$pageDesc = 'Your subscription order has been confirmed and paid. Instant credentials dispatched.';
 $pageCanonical = SITE_URL . '/success';
 $activePage = 'orders';
 
@@ -42,28 +42,61 @@ if ($pdo && $orderId > 0) {
     }
 }
 
+$isStore = false;
+if ($order && !empty($order['order_type']) && $order['order_type'] === 'store') {
+    $isStore = true;
+} elseif (isset($_GET['type']) && $_GET['type'] === 'store') {
+    $isStore = true;
+}
+
 // Fallback if accessed directly or mock
 if (!$order) {
-    $order = [
-        'id' => $orderId > 0 ? $orderId : 10842,
-        'customer_name' => 'Valued Customer',
-        'email' => 'customer@domain.com',
-        'whatsapp' => '+1 555 019 2831',
-        'plan_name' => '12 Months VIP Access',
-        'connections' => 1,
-        'amount' => 74.99,
-        'currency' => 'USD',
-        'country' => 'US',
-        'device' => 'Amazon Firestick / Android TV',
-        'payment_channel' => 'Credit / Debit Card',
-        'status' => 'Paid',
-        'created_at' => date('Y-m-d H:i:s')
-    ];
+    if ($isStore) {
+        $order = [
+            'id' => $orderId > 0 ? $orderId : 10842,
+            'customer_name' => 'Valued Customer',
+            'email' => 'customer@domain.com',
+            'whatsapp' => '+1 555 019 2831',
+            'plan_name' => 'Netflix Premium (1 Month)',
+            'order_type' => 'store',
+            'variation_name' => '1 Month (Private Profile)',
+            'connections' => 1,
+            'amount' => 4.99,
+            'currency' => 'USD',
+            'country' => 'US',
+            'device' => 'All Devices',
+            'payment_channel' => 'Credit / Debit Card',
+            'status' => 'Paid',
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+    } else {
+        $order = [
+            'id' => $orderId > 0 ? $orderId : 10842,
+            'customer_name' => 'Valued Customer',
+            'email' => 'customer@domain.com',
+            'whatsapp' => '+1 555 019 2831',
+            'plan_name' => '12 Months VIP Access',
+            'order_type' => 'iptv',
+            'connections' => 1,
+            'amount' => 74.99,
+            'currency' => 'USD',
+            'country' => 'US',
+            'device' => 'Amazon Firestick / Android TV',
+            'payment_channel' => 'Credit / Debit Card',
+            'status' => 'Paid',
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+    }
 }
 
 $currSymbol = get_currency_symbol($order['currency'] ?? 'USD');
 $cleanWa = preg_replace('/[^0-9]/', '', SUPPORT_WHATSAPP);
-$waText = urlencode("Hello LIVETVMARKET Support, I just completed payment for Order #LTV-{$order['id']}. Please verify my activation details.");
+
+if ($isStore) {
+    $waText = urlencode("Hello LIVETVMARKET Support, I completed payment for Digital Order #LTV-{$order['id']} ({$order['plan_name']}). Please send my private profile credentials and PIN.");
+} else {
+    $waText = urlencode("Hello LIVETVMARKET Support, I just completed payment for Order #LTV-{$order['id']}. Please verify my activation details.");
+}
 $waUrl = "https://wa.me/{$cleanWa}?text={$waText}";
 
 include __DIR__ . '/includes/head.php';
@@ -80,17 +113,31 @@ include __DIR__ . '/includes/navbar.php';
           <i data-lucide="check" class="w-10 h-10 text-emerald-600 stroke-[3]"></i>
         </div>
 
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3 uppercase tracking-wider">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Payment Confirmed • Automated Activation
-        </span>
+        <?php if ($isStore): ?>
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3 uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Payment Approved • Digital Subscription Order
+          </span>
 
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Thank You, <?= htmlspecialchars($order['customer_name'] ?? 'Customer') ?>!
-        </h1>
-        <p class="mt-2 text-base text-slate-600 max-w-xl mx-auto">
-          Your payment has been successfully approved. Your Anti-Freeze™ 9.9 high-speed streaming account is now fully provisioned.
-        </p>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Thank You, <?= htmlspecialchars($order['customer_name'] ?? 'Customer') ?>!
+          </h1>
+          <p class="mt-2 text-base text-slate-600 max-w-xl mx-auto">
+            Your payment has been successfully approved. Your order for <strong><?= htmlspecialchars($order['plan_name']) ?></strong> is confirmed. Our support team is preparing your private profile &amp; activation details.
+          </p>
+        <?php else: ?>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3 uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Payment Confirmed • Automated Activation
+          </span>
+
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Thank You, <?= htmlspecialchars($order['customer_name'] ?? 'Customer') ?>!
+          </h1>
+          <p class="mt-2 text-base text-slate-600 max-w-xl mx-auto">
+            Your payment has been successfully approved. Your Anti-Freeze™ 9.9 high-speed streaming account is now fully provisioned.
+          </p>
+        <?php endif; ?>
 
         <div class="mt-4 inline-block bg-slate-100 rounded-xl px-4 py-2 text-xs font-mono font-bold text-slate-700">
           Order Reference: #LTV-<?= htmlspecialchars($order['id']) ?>
@@ -100,84 +147,178 @@ include __DIR__ . '/includes/navbar.php';
       <!-- Two-Column Information Layout -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         
-        <!-- Column 1: Order Details -->
-        <div class="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i data-lucide="receipt" class="w-5 h-5 text-cyan-600"></i>
-            <h2 class="text-base font-bold text-slate-900">Subscription Summary</h2>
-          </div>
-
-          <div class="space-y-3 text-xs">
-            <div class="flex justify-between py-1.5 border-b border-gray-100">
-              <span class="text-slate-500">Plan Purchased</span>
-              <span class="font-bold text-slate-900"><?= htmlspecialchars($order['plan_name']) ?></span>
-            </div>
-            <div class="flex justify-between py-1.5 border-b border-gray-100">
-              <span class="text-slate-500">Device Connections</span>
-              <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['connections']) ?> Connection(s)</span>
-            </div>
-            <div class="flex justify-between py-1.5 border-b border-gray-100">
-              <span class="text-slate-500">Target Device</span>
-              <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['device'] ?? 'Smart TV / Firestick') ?></span>
-            </div>
-            <div class="flex justify-between py-1.5 border-b border-gray-100">
-              <span class="text-slate-500">Payment Channel</span>
-              <span class="font-semibold text-slate-900">Credit / Debit Card</span>
-            </div>
-            <div class="flex justify-between py-1.5 border-b border-gray-100">
-              <span class="text-slate-500">Payment Status</span>
-              <span class="font-bold text-emerald-600 flex items-center gap-1">
-                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-                Paid & Active
-              </span>
-            </div>
-            <div class="flex justify-between pt-2 text-sm font-extrabold text-slate-900">
-              <span>Total Paid</span>
-              <span class="text-cyan-700 font-mono text-base">
-                <?= htmlspecialchars($currSymbol) ?> <?= number_format((float)$order['amount'], 2) ?> <?= htmlspecialchars($order['currency']) ?>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Column 2: Activation Details & Instructions -->
-        <div class="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm flex flex-col justify-between">
-          <div>
+        <?php if ($isStore): ?>
+          <!-- Column 1: Digital Subscription Summary -->
+          <div class="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm">
             <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-              <i data-lucide="mail-check" class="w-5 h-5 text-emerald-600"></i>
-              <h2 class="text-base font-bold text-slate-900">Activation Credentials</h2>
+              <i data-lucide="receipt" class="w-5 h-5 text-cyan-600"></i>
+              <h2 class="text-base font-bold text-slate-900">Subscription Summary</h2>
             </div>
 
-            <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-950 mb-4">
-              <div class="font-bold text-emerald-900 flex items-center gap-1.5 mb-1.5">
-                <i data-lucide="send" class="w-4 h-4 text-emerald-600"></i>
-                Instant Email Delivery Initiated
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Service Plan</span>
+                <span class="font-bold text-slate-900"><?= htmlspecialchars($order['plan_name']) ?></span>
               </div>
-              <p class="leading-relaxed text-slate-600">
-                Your M3U playlist URL, Xtream Codes credentials (Username & Password), and setup guide have been generated and sent to:
-              </p>
-              <div class="mt-2 font-mono font-bold text-slate-900 bg-white/80 p-2 rounded-lg border border-emerald-200">
-                <?= htmlspecialchars($order['email']) ?>
+              <?php if (!empty($order['variation_name'])): ?>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Plan Duration</span>
+                <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['variation_name']) ?></span>
               </div>
-            </div>
-
-            <div class="text-[11px] text-slate-500 flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-gray-200">
-              <i data-lucide="info" class="w-4 h-4 text-cyan-600 shrink-0 mt-0.5"></i>
-              <span><strong>Check Spam/Junk:</strong> If you do not see the activation email within 2 minutes, please inspect your Spam folder or contact our 24/7 WhatsApp technician.</span>
+              <?php endif; ?>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Delivery Email</span>
+                <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['email']) ?></span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">WhatsApp Number</span>
+                <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['whatsapp']) ?></span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Payment Channel</span>
+                <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['payment_channel'] ?? 'Credit / Debit Card') ?></span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Payment Status</span>
+                <span class="font-bold text-emerald-600 flex items-center gap-1">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                  Paid &amp; Approved
+                </span>
+              </div>
+              <div class="flex justify-between pt-2 text-sm font-extrabold text-slate-900">
+                <span>Total Paid</span>
+                <span class="text-cyan-700 font-mono text-base">
+                  <?= htmlspecialchars($currSymbol) ?> <?= number_format((float)$order['amount'], 2) ?> <?= htmlspecialchars($order['currency']) ?>
+                </span>
+              </div>
             </div>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col gap-2.5">
-            <a href="/setup" class="w-full py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm transition-all">
-              <i data-lucide="book-open" class="w-4 h-4"></i>
-              View Complete Device Setup Guide
-            </a>
-            <a href="<?= $waUrl ?>" target="_blank" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm transition-all">
-              <i data-lucide="message-circle" class="w-4 h-4"></i>
-              Fast-Track VIP WhatsApp Support
-            </a>
+          <!-- Column 2: Digital Delivery Details -->
+          <div class="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+                <i data-lucide="sparkles" class="w-5 h-5 text-cyan-600"></i>
+                <h2 class="text-base font-bold text-slate-900">Profile &amp; Credentials Delivery</h2>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-cyan-50/70 border border-cyan-200/80 text-xs text-cyan-950 mb-4">
+                <div class="font-bold text-cyan-950 flex items-center gap-1.5 mb-1.5">
+                  <i data-lucide="send" class="w-4 h-4 text-cyan-600"></i>
+                  Fast Profile Dispatch in Progress
+                </div>
+                <p class="leading-relaxed text-slate-600">
+                  Your dedicated account login credentials, private profile assignment, and PIN are being prepared and will be sent directly to your WhatsApp and Email within <strong>5 to 15 minutes</strong>.
+                </p>
+                <div class="mt-2.5 space-y-1 text-slate-800 font-mono text-[11px] bg-white/90 p-2.5 rounded-lg border border-cyan-100">
+                  <div><span class="text-slate-500 font-sans">WhatsApp:</span> <strong><?= htmlspecialchars($order['whatsapp']) ?></strong></div>
+                  <div><span class="text-slate-500 font-sans">Email:</span> <strong><?= htmlspecialchars($order['email']) ?></strong></div>
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1.5">
+                <div class="flex items-center gap-1.5 text-emerald-700 font-bold">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                  <span>100% Replacement Warranty Included</span>
+                </div>
+                <p class="text-slate-500 leading-normal">
+                  Every digital service is backed by a full replacement warranty for your complete subscription period. If you ever need help or an update, our team is available 24/7 on WhatsApp.
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col gap-2.5">
+              <a href="<?= $waUrl ?>" target="_blank" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm transition-all">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                Connect on WhatsApp for Instant Setup &amp; PIN
+              </a>
+              <a href="/shop" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center flex items-center justify-center gap-2 transition-all">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                Browse More Subscriptions
+              </a>
+            </div>
           </div>
-        </div>
+
+        <?php else: ?>
+          <!-- Column 1: IPTV Order Details -->
+          <div class="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+              <i data-lucide="receipt" class="w-5 h-5 text-cyan-600"></i>
+              <h2 class="text-base font-bold text-slate-900">Subscription Summary</h2>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Plan Purchased</span>
+                <span class="font-bold text-slate-900"><?= htmlspecialchars($order['plan_name']) ?></span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Device Connections</span>
+                <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['connections']) ?> Connection(s)</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Target Device</span>
+                <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['device'] ?? 'Smart TV / Firestick') ?></span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Payment Channel</span>
+                <span class="font-semibold text-slate-900"><?= htmlspecialchars($order['payment_channel'] ?? 'Credit / Debit Card') ?></span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-slate-500">Payment Status</span>
+                <span class="font-bold text-emerald-600 flex items-center gap-1">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                  Paid &amp; Active
+                </span>
+              </div>
+              <div class="flex justify-between pt-2 text-sm font-extrabold text-slate-900">
+                <span>Total Paid</span>
+                <span class="text-cyan-700 font-mono text-base">
+                  <?= htmlspecialchars($currSymbol) ?> <?= number_format((float)$order['amount'], 2) ?> <?= htmlspecialchars($order['currency']) ?>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: IPTV Activation Details & Instructions -->
+          <div class="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+                <i data-lucide="mail-check" class="w-5 h-5 text-emerald-600"></i>
+                <h2 class="text-base font-bold text-slate-900">Activation Credentials</h2>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-950 mb-4">
+                <div class="font-bold text-emerald-900 flex items-center gap-1.5 mb-1.5">
+                  <i data-lucide="send" class="w-4 h-4 text-emerald-600"></i>
+                  Instant Email Delivery Initiated
+                </div>
+                <p class="leading-relaxed text-slate-600">
+                  Your M3U playlist URL, Xtream Codes credentials (Username &amp; Password), and setup guide have been generated and sent to:
+                </p>
+                <div class="mt-2 font-mono font-bold text-slate-900 bg-white/80 p-2 rounded-lg border border-emerald-200">
+                  <?= htmlspecialchars($order['email']) ?>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-slate-500 flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-gray-200">
+                <i data-lucide="info" class="w-4 h-4 text-cyan-600 shrink-0 mt-0.5"></i>
+                <span><strong>Check Spam/Junk:</strong> If you do not see the activation email within 2 minutes, please inspect your Spam folder or contact our 24/7 WhatsApp technician.</span>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col gap-2.5">
+              <a href="/setup" class="w-full py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm transition-all">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+                View Complete Device Setup Guide
+              </a>
+              <a href="<?= $waUrl ?>" target="_blank" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm transition-all">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                Fast-Track VIP WhatsApp Support
+              </a>
+            </div>
+          </div>
+        <?php endif; ?>
 
       </div>
 
@@ -186,7 +327,7 @@ include __DIR__ . '/includes/navbar.php';
         <a href="/" class="hover:text-cyan-600 transition-colors flex items-center gap-1">
           <i data-lucide="home" class="w-3.5 h-3.5"></i> Return to Homepage
         </a>
-        <a href="/track-order?order_id=<?= urlencode((string)$order['id']) ?>" class="hover:text-cyan-600 transition-colors flex items-center gap-1">
+        <a href="/track-order?order_id=<?= urlencode((string)$order['id']) ?><?= $isStore ? '&type=store' : '' ?>" class="hover:text-cyan-600 transition-colors flex items-center gap-1">
           <i data-lucide="truck" class="w-3.5 h-3.5"></i> Track Activation Status
         </a>
         <a href="/contact" class="hover:text-cyan-600 transition-colors flex items-center gap-1">
@@ -201,4 +342,3 @@ include __DIR__ . '/includes/navbar.php';
 include __DIR__ . '/includes/footer.php';
 include __DIR__ . '/includes/modals.php';
 ?>
-

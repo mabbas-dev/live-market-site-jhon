@@ -7,13 +7,14 @@
 require_once __DIR__ . '/config/config.php';
 
 $pageTitle = 'Track Order & Subscription Activation - ' . SITE_NAME;
-$pageDesc = 'Check your live IPTV order status, activation timeline, assigned streaming clusters, and resend your M3U playlist credentials.';
+$pageDesc = 'Check your live subscription order status, activation timeline, and resend your credentials.';
 $pageCanonical = SITE_URL . '/track-order';
 $activePage = 'track';
 
 $searched = false;
 $foundOrder = null;
 $searchQuery = '';
+$isStore = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['order_id']) || isset($_GET['email'])) {
     $searched = true;
@@ -32,20 +33,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['order_id']) || isset($
         }
     }
 
+    if ($foundOrder && !empty($foundOrder['order_type']) && $foundOrder['order_type'] === 'store') {
+        $isStore = true;
+    } elseif (isset($_GET['type']) && $_GET['type'] === 'store') {
+        $isStore = true;
+    }
+
     // If no order found in database, provide a mock/sample order so user can see the tracking layout
     if (!$foundOrder && !empty($searchQuery)) {
-        $foundOrder = [
-            'id' => (int)$cleanId > 0 ? (int)$cleanId : 10842,
-            'email' => filter_var($searchQuery, FILTER_VALIDATE_EMAIL) ? $searchQuery : 'customer@domain.com',
-            'plan_name' => '12 Months VIP Access',
-            'connections' => 1,
-            'amount' => '74.99',
-            'currency' => 'USD',
-            'device' => 'Amazon Firestick 4K',
-            'payment_channel' => 'Credit Card (Stripe)',
-            'status' => 'Active',
-            'created_at' => date('Y-m-d H:i:s', strtotime('-15 minutes'))
-        ];
+        if ($isStore) {
+            $foundOrder = [
+                'id' => (int)$cleanId > 0 ? (int)$cleanId : 10842,
+                'email' => filter_var($searchQuery, FILTER_VALIDATE_EMAIL) ? $searchQuery : 'customer@domain.com',
+                'whatsapp' => '+1 555 019 2831',
+                'plan_name' => 'Netflix Premium (1 Month)',
+                'order_type' => 'store',
+                'variation_name' => '1 Month (Private Profile)',
+                'connections' => 1,
+                'amount' => '4.99',
+                'currency' => 'USD',
+                'device' => 'All Devices',
+                'payment_channel' => 'Credit / Debit Card',
+                'status' => 'Paid',
+                'created_at' => date('Y-m-d H:i:s', strtotime('-15 minutes'))
+            ];
+        } else {
+            $foundOrder = [
+                'id' => (int)$cleanId > 0 ? (int)$cleanId : 10842,
+                'email' => filter_var($searchQuery, FILTER_VALIDATE_EMAIL) ? $searchQuery : 'customer@domain.com',
+                'whatsapp' => '+1 555 019 2831',
+                'plan_name' => '12 Months VIP Access',
+                'order_type' => 'iptv',
+                'connections' => 1,
+                'amount' => '74.99',
+                'currency' => 'USD',
+                'device' => 'Amazon Firestick 4K',
+                'payment_channel' => 'Credit / Debit Card',
+                'status' => 'Active',
+                'created_at' => date('Y-m-d H:i:s', strtotime('-15 minutes'))
+            ];
+        }
     }
 }
 
@@ -54,7 +81,7 @@ include __DIR__ . '/includes/top-banner.php';
 include __DIR__ . '/includes/navbar.php';
 ?>
 
-  <main class="bg-white py-14 sm:py-20">
+  <main class="bg-white py-14 sm:py-20 min-h-[85vh]">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Page Header -->
@@ -72,7 +99,7 @@ include __DIR__ . '/includes/navbar.php';
 
       <!-- Search Box Card -->
       <div class="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm mb-12" data-aos="zoom-in" data-aos-delay="100">
-        <form method="POST" action="/track-order" class="flex flex-col sm:flex-row items-center gap-3">
+        <form method="POST" action="/track-order<?= $isStore ? '?type=store' : '' ?>" class="flex flex-col sm:flex-row items-center gap-3">
           <div class="relative flex-1 w-full">
             <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
             <input 
@@ -93,7 +120,7 @@ include __DIR__ . '/includes/navbar.php';
         <div class="mt-4 flex flex-wrap items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-200">
           <span class="flex items-center gap-1.5">
             <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-600"></i>
-            <span>Average automated line generation: <strong>48 seconds</strong></span>
+            <span>Average automated processing time: <strong>5 - 15 minutes</strong></span>
           </span>
           <span class="flex items-center gap-1.5 text-emerald-600 font-semibold">
             <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
@@ -114,6 +141,11 @@ include __DIR__ . '/includes/navbar.php';
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> <?= htmlspecialchars($foundOrder['status']) ?>
                 </span>
+                <?php if ($isStore): ?>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                  Digital Service
+                </span>
+                <?php endif; ?>
               </div>
               <p class="text-xs text-slate-500 mt-1">Placed on <?= date('F j, Y, g:i a', strtotime($foundOrder['created_at'])) ?></p>
             </div>
@@ -126,81 +158,164 @@ include __DIR__ . '/includes/navbar.php';
             </div>
           </div>
 
-          <!-- 4-Step Interactive Timeline -->
-          <div class="py-10">
-            <h3 class="font-bold text-slate-900 text-sm mb-6 flex items-center gap-2">
-              <i data-lucide="git-commit" class="w-4 h-4 text-cyan-600"></i>
-              <span>Live Provisioning Status</span>
-            </h3>
+          <?php if ($isStore): ?>
+            <!-- 4-Step Interactive Timeline for Digital Services -->
+            <div class="py-10">
+              <h3 class="font-bold text-slate-900 text-sm mb-6 flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4 text-cyan-600"></i>
+                <span>Digital Subscription Provisioning Status</span>
+              </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-              
-              <!-- Step 1 -->
-              <div class="flex flex-col items-center text-center">
-                <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
-                  <i data-lucide="check" class="w-5 h-5"></i>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+                
+                <!-- Step 1 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="check" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-slate-900">Order Confirmed</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Verified in queue</p>
                 </div>
-                <h4 class="font-bold text-xs text-slate-900">Order Confirmed</h4>
-                <p class="text-[11px] text-slate-500 mt-0.5">Verified in queue</p>
-              </div>
 
-              <!-- Step 2 -->
-              <div class="flex flex-col items-center text-center">
-                <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
-                  <i data-lucide="credit-card" class="w-5 h-5"></i>
+                <!-- Step 2 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-slate-900">Payment Cleared</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5"><?= htmlspecialchars($foundOrder['payment_channel'] ?? 'Credit Card') ?></p>
                 </div>
-                <h4 class="font-bold text-xs text-slate-900">Payment Cleared</h4>
-                <p class="text-[11px] text-slate-500 mt-0.5"><?= htmlspecialchars($foundOrder['payment_channel']) ?></p>
-              </div>
 
-              <!-- Step 3 -->
-              <div class="flex flex-col items-center text-center">
-                <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
-                  <i data-lucide="server" class="w-5 h-5"></i>
+                <!-- Step 3 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-slate-900">Profile &amp; PIN Prepared</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Dedicated private slot</p>
                 </div>
-                <h4 class="font-bold text-xs text-slate-900">Anti-Freeze Node Built</h4>
-                <p class="text-[11px] text-slate-500 mt-0.5">Node Frankfurt #184</p>
-              </div>
 
-              <!-- Step 4 -->
-              <div class="flex flex-col items-center text-center">
-                <div class="w-10 h-10 rounded-full bg-cyan-600 text-white font-bold flex items-center justify-center mb-3 shadow-md">
-                  <i data-lucide="mail-check" class="w-5 h-5"></i>
+                <!-- Step 4 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-cyan-600 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-cyan-700">Dispatched</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">WhatsApp &amp; Email</p>
                 </div>
-                <h4 class="font-bold text-xs text-cyan-700">Sent to Inbox</h4>
-                <p class="text-[11px] text-slate-500 mt-0.5"><?= htmlspecialchars($foundOrder['email']) ?></p>
+
               </div>
+            </div>
 
+            <!-- Digital Order Summary Details Grid -->
+            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs mb-6">
+              <div>
+                <span class="text-slate-400 block mb-0.5">Digital Subscription:</span>
+                <strong class="text-slate-900 font-bold text-sm"><?= htmlspecialchars($foundOrder['plan_name']) ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">Delivery Email:</span>
+                <strong class="text-slate-900 font-bold text-sm"><?= htmlspecialchars($foundOrder['email']) ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">Delivery WhatsApp:</span>
+                <strong class="text-slate-900 font-bold text-sm"><?= htmlspecialchars(!empty($foundOrder['whatsapp']) ? $foundOrder['whatsapp'] : 'Provided upon checkout') ?></strong>
+              </div>
             </div>
-          </div>
 
-          <!-- Order Summary Details Grid -->
-          <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs mb-6">
-            <div>
-              <span class="text-slate-400 block mb-0.5">Subscription Plan:</span>
-              <strong class="text-slate-900 font-bold text-sm"><?= htmlspecialchars($foundOrder['plan_name']) ?></strong>
+            <!-- Action Buttons for Digital Services -->
+            <?php 
+              $waClean = preg_replace('/[^0-9]/', '', SUPPORT_WHATSAPP);
+              $trackWaMsg = urlencode("Hello LIVETVMARKET Support, I am tracking my digital order #LTV-{$foundOrder['id']} ({$foundOrder['plan_name']}). Please send my login profile credentials & PIN.");
+            ?>
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+              <a href="https://wa.me/<?= $waClean ?>?text=<?= $trackWaMsg ?>" target="_blank" class="w-full sm:flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-md">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                <span>Connect on WhatsApp for Instant Setup &amp; PIN</span>
+              </a>
+              <button onclick="alert('Your order details and delivery status have been re-dispatched to <?= htmlspecialchars($foundOrder['email']) ?> and <?= htmlspecialchars($foundOrder['whatsapp'] ?? 'your WhatsApp') ?>. Our team prepares private profiles within 5-15 minutes.');" class="btn-glow-cyan w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span>Resend Status to Email</span>
+              </button>
             </div>
-            <div>
-              <span class="text-slate-400 block mb-0.5">Simultaneous Devices:</span>
-              <strong class="text-slate-900 font-bold text-sm"><?= (int)$foundOrder['connections'] ?> Connection<?= (int)$foundOrder['connections'] > 1 ? 's' : '' ?></strong>
-            </div>
-            <div>
-              <span class="text-slate-400 block mb-0.5">Primary Target Device:</span>
-              <strong class="text-slate-900 font-bold text-sm"><?= htmlspecialchars($foundOrder['device']) ?></strong>
-            </div>
-          </div>
 
-          <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row items-center gap-3">
-            <button onclick="alert('Success! Your M3U and Xtream login credentials have been re-dispatched to <?= htmlspecialchars($foundOrder['email']) ?>. Please check your inbox and spam folder.');" class="btn-glow-cyan w-full sm:flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-md">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-              <span>Resend Credentials to Email</span>
-            </button>
-            <a href="<?= WHATSAPP_LINK ?>" target="_blank" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-              <i data-lucide="message-circle" class="w-4 h-4"></i>
-              <span>Live WhatsApp Support</span>
-            </a>
-          </div>
+          <?php else: ?>
+            <!-- 4-Step Interactive Timeline for IPTV -->
+            <div class="py-10">
+              <h3 class="font-bold text-slate-900 text-sm mb-6 flex items-center gap-2">
+                <i data-lucide="git-commit" class="w-4 h-4 text-cyan-600"></i>
+                <span>Live Provisioning Status</span>
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+                
+                <!-- Step 1 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="check" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-slate-900">Order Confirmed</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Verified in queue</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-slate-900">Payment Cleared</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5"><?= htmlspecialchars($foundOrder['payment_channel']) ?></p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="server" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-slate-900">Anti-Freeze Node Built</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Node Frankfurt #184</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-10 h-10 rounded-full bg-cyan-600 text-white font-bold flex items-center justify-center mb-3 shadow-md">
+                    <i data-lucide="mail-check" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="font-bold text-xs text-cyan-700">Sent to Inbox</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5"><?= htmlspecialchars($foundOrder['email']) ?></p>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- IPTV Order Summary Details Grid -->
+            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs mb-6">
+              <div>
+                <span class="text-slate-400 block mb-0.5">Subscription Plan:</span>
+                <strong class="text-slate-900 font-bold text-sm"><?= htmlspecialchars($foundOrder['plan_name']) ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">Simultaneous Devices:</span>
+                <strong class="text-slate-900 font-bold text-sm"><?= (int)$foundOrder['connections'] ?> Connection<?= (int)$foundOrder['connections'] > 1 ? 's' : '' ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">Primary Target Device:</span>
+                <strong class="text-slate-900 font-bold text-sm"><?= htmlspecialchars($foundOrder['device']) ?></strong>
+              </div>
+            </div>
+
+            <!-- Action Buttons for IPTV -->
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+              <button onclick="alert('Success! Your M3U and Xtream login credentials have been re-dispatched to <?= htmlspecialchars($foundOrder['email']) ?>. Please check your inbox and spam folder.');" class="btn-glow-cyan w-full sm:flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span>Resend Credentials to Email</span>
+              </button>
+              <a href="<?= WHATSAPP_LINK ?>" target="_blank" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                <span>Live WhatsApp Support</span>
+              </a>
+            </div>
+          <?php endif; ?>
 
         </div>
       <?php elseif ($searched && !$foundOrder): ?>
@@ -220,28 +335,53 @@ include __DIR__ . '/includes/navbar.php';
           <span>Frequently Asked Questions About Delivery</span>
         </h3>
 
-        <div class="space-y-4 text-xs sm:text-sm text-slate-600">
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <h4 class="font-bold text-slate-900 mb-1">Didn't receive your activation email?</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Automated system emails are sent from <strong>support@livetvmarket.com</strong>. Occasionally, email filters (especially Hotmail and Gmail) direct automated system messages to the <strong>Spam / Junk</strong> folder. Please check there first!
-            </p>
-          </div>
+        <?php if ($isStore): ?>
+          <div class="space-y-4 text-xs sm:text-sm text-slate-600">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <h4 class="font-bold text-slate-900 mb-1">How will I receive my digital account and profile credentials?</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                For digital services (Netflix, Prime, Spotify, etc.), our provisioning team dispatches your dedicated account details, private profile assignment, and login PIN directly to your registered <strong>WhatsApp number</strong> and <strong>Email address</strong> within 5 to 15 minutes of payment.
+              </p>
+            </div>
 
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <h4 class="font-bold text-slate-900 mb-1">What details will be inside my email?</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Your email includes: (1) Your custom M3U Playlist link, (2) Xtream Codes API login credentials (Server URL, Username, Password), and (3) Downloader numeric quick codes for TiviMate and IPTV Smarters Pro.
-            </p>
-          </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <h4 class="font-bold text-slate-900 mb-1">Is my digital subscription covered by warranty?</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Yes! Every subscription purchased from LIVETVMARKET includes a <strong>100% full-term replacement warranty</strong>. If you ever experience any access interruption, our 24/7 WhatsApp technician will replace or restore your profile immediately.
+              </p>
+            </div>
 
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <h4 class="font-bold text-slate-900 mb-1">Need instant help configuring your Firestick or Smart TV?</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Message our 24/7 technical WhatsApp desk with your Order # and our staff will assist you in real time with zero delay.
-            </p>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <h4 class="font-bold text-slate-900 mb-1">Need instant activation or live setup support?</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Message our 24/7 support desk on WhatsApp with your Order Reference # and an agent will assist you in real time with zero wait.
+              </p>
+            </div>
           </div>
-        </div>
+        <?php else: ?>
+          <div class="space-y-4 text-xs sm:text-sm text-slate-600">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <h4 class="font-bold text-slate-900 mb-1">Didn't receive your activation email?</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Automated system emails are sent from <strong>support@livetvmarket.com</strong>. Occasionally, email filters (especially Hotmail and Gmail) direct automated system messages to the <strong>Spam / Junk</strong> folder. Please check there first!
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <h4 class="font-bold text-slate-900 mb-1">What details will be inside my email?</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Your email includes: (1) Your custom M3U Playlist link, (2) Xtream Codes API login credentials (Server URL, Username, Password), and (3) Downloader numeric quick codes for TiviMate and IPTV Smarters Pro.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <h4 class="font-bold text-slate-900 mb-1">Need instant help configuring your Firestick or Smart TV?</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Message our 24/7 technical WhatsApp desk with your Order # and our staff will assist you in real time with zero delay.
+              </p>
+            </div>
+          </div>
+        <?php endif; ?>
       </div>
 
     </div>
@@ -251,4 +391,3 @@ include __DIR__ . '/includes/navbar.php';
 include __DIR__ . '/includes/modals.php';
 include __DIR__ . '/includes/footer.php';
 ?>
-

@@ -31,7 +31,15 @@ $variationId  = (int)($input['variation_id'] ?? 0);
 $customerName = trim($input['customer_name'] ?? $input['name'] ?? '');
 $email        = trim($input['email'] ?? '');
 $whatsapp     = trim($input['whatsapp'] ?? '');
-$paymentChannel = trim($input['payment_channel'] ?? 'Credit Card');
+$paymentChannelInput = trim($input['payment_channel'] ?? 'Credit Card');
+if (stripos($paymentChannelInput, 'PayPal') !== false || stripos($paymentChannelInput, 'Crypto') !== false) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'PayPal and Crypto payments are currently coming soon. Please checkout securely via Credit / Debit Card.'
+    ]);
+    exit;
+}
+$paymentChannel = 'Credit Card';
 
 if (empty($customerName) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL) || empty($whatsapp)) {
     echo json_encode(['success' => false, 'message' => 'Full Name, a valid Delivery Email address, and WhatsApp Number are required.']);
@@ -87,21 +95,18 @@ try {
     $stmt->execute([$customerName, $email, $whatsapp, $planTitle, $productId, $varName, $amount, $currency, $country, $device, $paymentChannel]);
     $orderId = (int)$pdo->lastInsertId();
 
-    $redirectUrl = null;
-    // If Credit / Debit Card, create secure signed bridge checkout URL
-    if (stripos($paymentChannel, 'Card') !== false || stripos($paymentChannel, 'Credit') !== false) {
-        $redirectUrl = createBridgeCheckoutUrl([
-            'id'            => $orderId,
-            'amount'        => $amount,
-            'currency'      => $currency,
-            'customer_name' => $customerName,
-            'email'         => $email,
-            'whatsapp'      => $whatsapp
-        ]);
-    } else {
-        // Trigger notification for manual orders
-        notifyNewOrder($orderId);
-    }
+    // Trigger notification for new store order
+    notifyNewOrder($orderId);
+
+    // Create secure signed bridge checkout URL
+    $redirectUrl = createBridgeCheckoutUrl([
+        'id'            => $orderId,
+        'amount'        => $amount,
+        'currency'      => $currency,
+        'customer_name' => $customerName,
+        'email'         => $email,
+        'whatsapp'      => $whatsapp
+    ]);
 
     echo json_encode([
         'success'      => true,
